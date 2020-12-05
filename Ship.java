@@ -89,20 +89,25 @@ public class Ship {
             break;
         }
         
+        this.shipPosition = new ArrayList<IntPair>();
+
         switch(orientation){
         case 1:
             for(int i=0; i<loopVariable; i++){
-                temp.j_pos = position.j_pos + i;
-                shipPosition.add(position);
+                temp = new IntPair(position.i_pos, position.j_pos + i);
+                this.shipPosition.add(temp);
             }
             break;
         case 2:
             for(int i=0; i<loopVariable; i++){
-                temp.i_pos = position.i_pos + i;
-                shipPosition.add(position);
+                temp = new IntPair(position.i_pos + i, position.j_pos);
+                shipPosition.add(temp);
             }
             break;
         }
     }
 
+    public ArrayList<IntPair> getShipPosition() {
+        return shipPosition;
+    }
 }

@@ -28,6 +28,7 @@ class Grid{
                 System.out.print(board[i][j] + " ");
         }
         System.out.println();
+        System.out.println();
     }
 
     /*Prints the board with filtered - for enemy*/
@@ -50,6 +51,7 @@ class Grid{
                         break;    
                 }
         }
+        System.out.println();
         System.out.println();
     }
 

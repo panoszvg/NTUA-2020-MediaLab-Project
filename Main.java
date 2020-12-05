@@ -31,7 +31,7 @@ public class Main {
         /*********
          * Read from file - add exceptions, for now assume it is correct
          *********/
-        
+        System.out.println("Ship Array size = " + Player.shipArray.size()); ///////////////////////
         Scanner sc = null;
         for(int i=0; i<2; i++)
         try {
@@ -43,10 +43,19 @@ public class Main {
                 String str = sc.nextLine();
                 parseData(str);
                 IntPair temp = new IntPair(i_position, j_position);
-                if(i==0)
+                System.out.println("Type of ship:" + typeOfShip +" i:" + temp.i_pos + " j:" + temp.j_pos);
+                if(i==0){
+                    /* Set ship position */
                     Player.shipArray[typeOfShip-1].setShipPosition(typeOfShip, temp, orientation);
-                else
+                    /* Update board in corresponding Grid */
+                    for(int j=0; j<Player.shipArray[typeOfShip-1].getShipPosition().size(); j++)
+                        PlayerGrid.Set(Player.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos, Player.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos, 1);
+                }
+                else{
                     EnemyPlayer.shipArray[typeOfShip-1].setShipPosition(typeOfShip, temp, orientation);
+                    for(int j=0; j<EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().size(); j++)
+                        EnemyGrid.Set(EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos, EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos, 1);
+                }
             }
         } catch (IOException exp){
             exp.printStackTrace();
@@ -55,9 +64,8 @@ public class Main {
                 sc.close();
         }
 
-
-
-
+        PlayerGrid.printUnfiltered();
+        EnemyGrid.printUnfiltered();
 
 
 
