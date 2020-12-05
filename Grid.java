@@ -1,5 +1,3 @@
-
-
 class Grid{
     
     private int board[][];
@@ -55,8 +53,9 @@ class Grid{
         System.out.println();
     }
 
-    /* Hits the position (i,j) it is given */
-    public void Hit(int i, int j){
+    /* Hits the position (i,j) it is given - returns true if it succeeds */
+    public boolean Hit(int i, int j){
+
         switch(this.board[i][j]){
             case 0: /* Sea */
                 this.board[i][j] = 3; /* becomes Hit Sea */
@@ -65,12 +64,11 @@ class Grid{
                 this.board[i][j] = 2; /* becomes Hit Ship */
                 break;
             case 2: /* Hit Ship - is already hit */
-                // Throw AlreadyHit Exception
-                break;
+                return false;
             case 3: /* Hit Sea - is already hit */
-                // Throw AlreadyHit Exception
-                break;    
+                return false;
         }
+        return true;
     }
 
     /* Set a specific position (i,j) as a specific input (setNumber) */
@@ -79,6 +77,14 @@ class Grid{
         else {
             this.board[i][j] = setNumber;
         }
+    }
+
+    public boolean isUnknown(int i, int j){
+        if(i<0 || i>10 || j<0 || j>10 
+        || this.board[i][j] != 0 
+        || this.board[i][j] != 0) 
+            return false;
+        else return true;
     }
 
 }
