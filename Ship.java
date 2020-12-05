@@ -1,9 +1,12 @@
+import java.util.*;
+
 public class Ship {
     private String type;
     private int occupyingSpaces;
     private int shotPoints;
     private int sinkBonus;
     private int timesHit;
+    private ArrayList<IntPair> shipPosition;
 
     /* Create Ship - is called 5 times for each player */
     Ship(String type){
@@ -60,4 +63,46 @@ public class Ship {
     public int getSinkBonus() {
         return this.sinkBonus;
     }
+
+    /* It takes the info provided by the .txt file and 
+    assigns it to the shipPosition */
+    public void setShipPosition(int typeOfShip, IntPair position, int orientation){
+        
+        IntPair temp = new IntPair(position.i_pos, position.j_pos);
+        int loopVariable = 0;
+
+        switch(typeOfShip){
+        case 1:
+            loopVariable = 5;
+            break;
+        case 2:
+            loopVariable = 4;
+            break;
+        case 3:
+            loopVariable = 3;
+            break;
+        case 4:
+            loopVariable = 3;
+            break;
+        case 5:
+            loopVariable = 2;
+            break;
+        }
+        
+        switch(orientation){
+        case 1:
+            for(int i=0; i<loopVariable; i++){
+                temp.j_pos = position.j_pos + i;
+                shipPosition.add(position);
+            }
+            break;
+        case 2:
+            for(int i=0; i<loopVariable; i++){
+                temp.i_pos = position.i_pos + i;
+                shipPosition.add(position);
+            }
+            break;
+        }
+    }
+
 }

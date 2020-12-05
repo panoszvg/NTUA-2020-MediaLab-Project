@@ -24,7 +24,7 @@ public class Player {
         this.shipArray[4] = new Ship("Destroyer");
 
         this.enemyChoices = new Vector<IntPair>();
-        IntPair temp = new IntPair();
+        IntPair temp = new IntPair(0, 0);
         for(int i=0; i<10; i++)
             for(int j=0; j<10; j++){
                 temp.i_pos = i;
@@ -59,7 +59,7 @@ public class Player {
     public IntPair AIChoose(IntPair possiblePositions){
         
         Random rand = new Random();
-        IntPair ans = new IntPair();
+        IntPair ans = new IntPair(0, 0);
         
         /* Do you want a smart choice? Or random? */
         if(this.AIOption == false){
