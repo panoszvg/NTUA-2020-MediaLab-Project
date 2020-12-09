@@ -57,7 +57,6 @@ class Grid{
 
     /* Hits the position (i,j) it is given - returns true if it succeeds */
     public boolean Hit(int i, int j){
-
         switch(this.board[i][j]){
             case 0: /* Sea */
                 this.board[i][j] = 3; /* becomes Hit Sea */
@@ -82,11 +81,20 @@ class Grid{
     }
 
     public boolean isUnknown(int i, int j){
-        if(i<0 || i>10 || j<0 || j>10 
-        || this.board[i][j] != 0 
-        || this.board[i][j] != 0) 
+        try{
+            if(this.board[i][j] == 0 
+            || this.board[i][j] == 1) return true;
+        }
+        catch(Exception arrayIndexOutOfBoundsException){
             return false;
-        else return true;
+        }
+        finally{}
+        return false;
+    }
+
+    public boolean wasHit(IntPair position){
+        if(this.board[position.i_pos][position.j_pos] == 2) return true;
+        else return false;
     }
 
 }

@@ -52,6 +52,10 @@ public class Ship {
         else return "Hit";
     }
 
+    public void isHit(){
+        this.timesHit++;
+    }
+
     public String getType() {
         return this.type;
     }

@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class Player {
     private String name;
     private int points;
@@ -23,6 +25,18 @@ public class Player {
         System.out.println("Player " + this.name + " Statistics");
         System.out.println("Points " + this.points);
         System.out.println("Remaining Moves " + this.moves);
+    }
+
+    /* Finds which ship is in position (i, j) */
+    public int findShip(IntPair position){
+        for(int i=0; i<5; i++){
+            ArrayList<IntPair> temp = new ArrayList<IntPair>();
+            temp = this.shipArray[i].getShipPosition();
+            for(int j=0; j<this.shipArray[i].getOccupyingSpaces(); j++){
+                if(temp.get(j).equals(position)) return i;
+            }
+        }
+        return -1;
     }
 
     /* Player made a move, decrease number of remaining moves */

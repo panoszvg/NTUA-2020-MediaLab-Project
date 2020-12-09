@@ -17,10 +17,10 @@ and then initializes EnemyPlayer-specific parameters
         IntPair temp = new IntPair(0, 0);
         for(int i=0; i<10; i++)
             for(int j=0; j<10; j++){
-                temp.i_pos = i;
-                temp.j_pos = j;
+                temp = new IntPair(i, j);
                 enemyChoices.add(temp);
             }
+        System.out.println(enemyChoices.size());
     }
 
     /* Is used by the enemy/computer to choose which position to hit -
@@ -31,7 +31,7 @@ and then initializes EnemyPlayer-specific parameters
         IntPair ans = new IntPair(0, 0);
         
         /* Do you want a smart choice? Or random? */
-        if(this.AIOption == false){
+        if(this.AIOption == false || possiblePositions.i_pos == -1){
             /* Try two random numbers and if they are possible moves
             that can be made, remove them from the choices and return them */
             do{
@@ -46,7 +46,6 @@ and then initializes EnemyPlayer-specific parameters
         }
         /* Find index of IntPair that contains (i, j) and remove it */
         enemyChoices.remove(enemyChoices.indexOf(ans));
-        
         return ans;
     }
 

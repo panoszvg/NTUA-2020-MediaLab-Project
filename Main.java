@@ -4,6 +4,7 @@ import java.util.*;
 public class Main {
 
     private static Integer typeOfShip, i_position, j_position, orientation;
+    private static IntPair possiblePositionsErrorIntPair;
 
     /* Function to assist file input
     Source: https://knpcode.com/java-programs/how-to-read-delimited-file-in-java/ 
@@ -34,7 +35,6 @@ public class Main {
         /*********
          * Read from file - add exceptions, for now assume it is correct
          *********/
-        System.out.println("Ship Array size = " + Player.shipArray.length);
         Scanner sc = null;
         for(int i=0; i<2; i++)
         try {
@@ -84,7 +84,7 @@ public class Main {
     
     */
     // Is Game Over? (1) -> Ships
-    
+    if(possiblePositions.isEmpty()) System.out.println("In loop with possiblePositions = " + possiblePositions.size());
     IntPair positionToHit = new IntPair(0,0);
     /* Hit is done after the skeleton and if it doesn't succeed
     it returns false, thus re-entering the do-while */
@@ -93,28 +93,49 @@ public class Main {
         and put them in positionToHit variable (necessary for predictions afterwards) */
         /* Note: In AIChoose, possiblePositions is only used if AIOption is enabled, 
         therefore there is no need to examine edge cases (e.g. the first round where it's NULL) */
-        positionToHit = EnemyPlayer.AIChoose(possiblePositions.get(0));
-        if(!possiblePositions.isEmpty()){
-            /* if there are possible positions, remove one after using it -
-            (it is used when it is chosen from AIChoose) */
-            possiblePositions.remove(0);
+        try{
+            positionToHit = EnemyPlayer.AIChoose(possiblePositions.get(0));
         }
-        else{
-            /* if there aren't any possible positions, disable AI Option */
-            EnemyPlayer.disableAIOption();
+        catch (Exception indexOutOfBoundsException){
+            possiblePositionsErrorIntPair = new IntPair(-1, -1);
+            positionToHit = EnemyPlayer.AIChoose(possiblePositionsErrorIntPair);
+        }
+        finally{
+            if(!possiblePositions.isEmpty()){
+                /* if there are possible positions, remove one after using it -
+                (it is used when it is chosen from AIChoose) */
+                System.out.println("Shouldn't see this message");
+                possiblePositions.remove(0);
+            }
+            else{
+                /* if there aren't any possible positions, disable AI Option */
+                EnemyPlayer.disableAIOption();
+            }
         }
     }
     while (!PlayerGrid.Hit(positionToHit.i_pos, positionToHit.j_pos));
-    
+
+    /* If the positionToHit (that was hit) was where 
+    a ship was in the Grid, also update "Hit" status to Ship */
+    if(PlayerGrid.wasHit(positionToHit)){
+        Player.shipArray[Player.findShip(positionToHit)].isHit();
+        System.out.println("A SHIP WAS HIT");
+    }
+
     /* If a ship is hit enable AI Option */
-    for(int i=0; i<5; i++)
-        if(Player.shipArray[i].Condition() == "Hit") EnemyPlayer.enableAIOption();
-        else EnemyPlayer.disableAIOption();
+    for(int i=0; i<5; i++){
+        if(Player.shipArray[i].Condition() == "Hit" && PlayerGrid.wasHit(positionToHit)) {
+            System.out.println("Ship #" + i + " is hit  ->  AI Option is enabled");    
+            EnemyPlayer.enableAIOption();
+        }
+    }
 
+
+System.out.println("OUTSIDE OF CHECK");
+    /* If AI Option is enabled add new possible moves */    
     if(EnemyPlayer.getAIOption()){
-       
-        IntPair temp = new IntPair(0,0);
-
+        System.out.println("INSIDE CHECK");
+        IntPair temp = new IntPair(positionToHit.i_pos, positionToHit.j_pos);
     /*  
     We need to check these positions:
          []
@@ -123,35 +144,31 @@ public class Main {
     of the previous Hit move (cause we assume it succeeded).
     We add new possible positions in the possiblePositions ArrayList
     */
-
-        temp.i_pos = positionToHit.i_pos;
-        temp.j_pos = positionToHit.j_pos;
-     
+     System.out.println("positionToHit:  i = " + positionToHit.i_pos + "  j = " + positionToHit.j_pos);
     /* 1st position -> (i-1, j) */
-        temp.i_pos -= 1;
-        if(PlayerGrid.isUnknown(temp.i_pos, temp.j_pos))
-            possiblePositions.add(possiblePositions.size(), temp);
-
+        if(PlayerGrid.isUnknown(temp.i_pos-1, temp.j_pos)){
+            System.out.println("Message 1");
+            possiblePositions.add(new IntPair(positionToHit.i_pos-1, positionToHit.j_pos));
+        }
     /* 2nd position -> (i+1, j) */        
-        temp.i_pos += 2;
-        if(PlayerGrid.isUnknown(temp.i_pos, temp.j_pos))
-            possiblePositions.add(possiblePositions.size(), temp);
-        temp.i_pos -= 1;
-      
+        if(PlayerGrid.isUnknown(temp.i_pos+1, temp.j_pos)){
+            System.out.println("Message 2");
+            possiblePositions.add(new IntPair(positionToHit.i_pos+1, positionToHit.j_pos));
+        }
     /* 3rd position -> (i, j-1) */    
-        temp.j_pos -= 1;
-        if(PlayerGrid.isUnknown(temp.i_pos, temp.j_pos))
-            possiblePositions.add(possiblePositions.size(), temp);
-       
+        if(PlayerGrid.isUnknown(temp.i_pos, temp.j_pos-1)){
+            System.out.println("Message 3");
+            possiblePositions.add(new IntPair(positionToHit.i_pos, positionToHit.j_pos-1));
+        }
     /* 4th position -> (i, j+1) */    
-            temp.j_pos += 2;
-        if(PlayerGrid.isUnknown(temp.i_pos, temp.j_pos))    
-            possiblePositions.add(possiblePositions.size(), temp);
-        
+        if(PlayerGrid.isUnknown(temp.i_pos, temp.j_pos+1)){  
+            System.out.println("Message 4");
+            possiblePositions.add(new IntPair(positionToHit.i_pos, positionToHit.j_pos+1));
+        }
     /* Note: the validity of the positions (e.g. if i<0)
     is checked in the isUnknown function */
     }
-
+    EnemyPlayer.MadeAMove();
     PlayerGrid.printFiltered();
 
     /*
@@ -160,6 +177,7 @@ public class Main {
     
     */
     // Is Game Over? (2) -> Ships -> Moves
+    if(EnemyPlayer.getMoves() == 0) break;
     }
     }
 }
