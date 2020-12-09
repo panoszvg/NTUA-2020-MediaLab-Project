@@ -75,7 +75,7 @@ class Grid{
 
     /* Set a specific position (i,j) as a specific input (setNumber) */
     public void Set(int i, int j, int setNumber){
-        if(i<0 || i>3 || j<0 || j>3) ;//Throw InvalidNumberToSet Exception
+        if(i<0 || i>10 || j<0 || j>10) ;//Throw InvalidNumberToSet Exception
         else {
             this.board[i][j] = setNumber;
         }

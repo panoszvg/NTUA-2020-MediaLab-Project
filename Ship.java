@@ -64,6 +64,10 @@ public class Ship {
         return this.sinkBonus;
     }
 
+    public int getOccupyingSpaces() {
+        return occupyingSpaces;
+    }
+
     /* It takes the info provided by the .txt file and 
     assigns it to the shipPosition */
     public void setShipPosition(int typeOfShip, IntPair position, int orientation){

@@ -5,6 +5,9 @@ public class Main {
 
     private static Integer typeOfShip, i_position, j_position, orientation;
 
+    /* Function to assist file input
+    Source: https://knpcode.com/java-programs/how-to-read-delimited-file-in-java/ 
+    */
     public static void parseData(String str) {
         Scanner lineScanner = new Scanner(str);
         lineScanner.useDelimiter(",");
@@ -13,9 +16,9 @@ public class Main {
             i_position = Integer.parseInt(lineScanner.next());
             j_position = Integer.parseInt(lineScanner.next());
             orientation = Integer.parseInt(lineScanner.next());
-            System.out.println("Input: " 
+            /*System.out.println("Input: " 
             + typeOfShip + i_position 
-            + j_position + orientation);
+            + j_position + orientation);*/
         }
         lineScanner.close();
     }
@@ -31,30 +34,34 @@ public class Main {
         /*********
          * Read from file - add exceptions, for now assume it is correct
          *********/
-        System.out.println("Ship Array size = " + Player.shipArray.size()); ///////////////////////
+        System.out.println("Ship Array size = " + Player.shipArray.length);
         Scanner sc = null;
         for(int i=0; i<2; i++)
         try {
             if(i==0)
                 sc = new Scanner(new File("/home/panos/Desktop/MediaLab/player_SCENARIO-ID.txt"));
             else 
-            sc = new Scanner(new File("/home/panos/Desktop/MediaLab/enemy_SCENARIO-ID.txt"));
+                sc = new Scanner(new File("/home/panos/Desktop/MediaLab/enemy_SCENARIO-ID.txt"));
+            
             while (sc.hasNextLine()) {
                 String str = sc.nextLine();
                 parseData(str);
-                IntPair temp = new IntPair(i_position, j_position);
-                System.out.println("Type of ship:" + typeOfShip +" i:" + temp.i_pos + " j:" + temp.j_pos);
+                IntPair temp = new IntPair(i_position, j_position); /* is local to while, no need to free memory */
                 if(i==0){
+                  /* For Player */
                     /* Set ship position */
                     Player.shipArray[typeOfShip-1].setShipPosition(typeOfShip, temp, orientation);
                     /* Update board in corresponding Grid */
-                    for(int j=0; j<Player.shipArray[typeOfShip-1].getShipPosition().size(); j++)
-                        PlayerGrid.Set(Player.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos, Player.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos, 1);
+                    for(int j=0; j<Player.shipArray[typeOfShip-1].getOccupyingSpaces(); j++)
+                        PlayerGrid.Set(Player.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos, 
+                        Player.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos, 1);
                 }
                 else{
+                  /* For Enemy */
                     EnemyPlayer.shipArray[typeOfShip-1].setShipPosition(typeOfShip, temp, orientation);
-                    for(int j=0; j<EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().size(); j++)
-                        EnemyGrid.Set(EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos, EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos, 1);
+                    for(int j=0; j<EnemyPlayer.shipArray[typeOfShip-1].getOccupyingSpaces(); j++)
+                        EnemyGrid.Set(EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos, 
+                        EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos, 1);
                 }
             }
         } catch (IOException exp){
@@ -66,7 +73,6 @@ public class Main {
 
         PlayerGrid.printUnfiltered();
         EnemyGrid.printUnfiltered();
-
 
 
     // while(true){
