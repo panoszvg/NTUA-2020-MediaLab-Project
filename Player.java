@@ -1,13 +1,8 @@
-import java.util.Random;
-import java.util.Vector;
-
 public class Player {
     private String name;
     private int points;
     private int moves;
-    private boolean AIOption;
     Ship[] shipArray;
-    private Vector<IntPair> enemyChoices;
 
     /* Initalizes Player class with Name, Points
     (initially 0) and Moves (initially 40) */
@@ -15,22 +10,12 @@ public class Player {
         this.name = name;
         this.points = 0;
         this.moves = 40;
-        AIOption = false;
         this.shipArray = new Ship[5];
         this.shipArray[0] = new Ship("Carrier");
         this.shipArray[1] = new Ship("Battleship");
         this.shipArray[2] = new Ship("Cruiser");
         this.shipArray[3] = new Ship("Submarine");
         this.shipArray[4] = new Ship("Destroyer");
-
-        this.enemyChoices = new Vector<IntPair>();
-        IntPair temp = new IntPair(0, 0);
-        for(int i=0; i<10; i++)
-            for(int j=0; j<10; j++){
-                temp.i_pos = i;
-                temp.j_pos = j;
-                enemyChoices.add(temp);
-            }
     }
 
     /* Prints Player Statistics - for debugging */
@@ -50,42 +35,12 @@ public class Player {
         this.points += points;
     }
 
-    public boolean getAIOption(){
-        return this.AIOption;
+    public int getMoves() {
+        return moves;
     }
-
-    /* Is used by the enemy/computer to choose which position to hit -
-    possiblePositions is given by main and is updated when this function resolves */
-    public IntPair AIChoose(IntPair possiblePositions){
-        
-        Random rand = new Random();
-        IntPair ans = new IntPair(0, 0);
-        
-        /* Do you want a smart choice? Or random? */
-        if(this.AIOption == false){
-            /* Try two random numbers and if they are possible moves
-            that can be made, remove them from the choices and return them */
-            do{
-                ans.i_pos = rand.nextInt(10);
-                ans.j_pos = rand.nextInt(10);
-            }
-            while(!enemyChoices.contains(ans));
-            /* Find index of IntPair that contains (i, j) and remove it */
-            enemyChoices.remove(enemyChoices.indexOf(ans));
-        }
-        else{
-            ans.i_pos = possiblePositions.i_pos;
-            ans.j_pos = possiblePositions.j_pos;
-        }
-        return ans;
-    }
-
-    public void enableAIOption(){
-        this.AIOption = true;
-    }
-
-    public void disableAIOption(){
-        this.AIOption = false;
+    
+    public int getPoints() {
+        return points;
     }
 
 }
