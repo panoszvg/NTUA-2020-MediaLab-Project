@@ -17,41 +17,34 @@ public class Main {
             i_position = Integer.parseInt(lineScanner.next());
             j_position = Integer.parseInt(lineScanner.next());
             orientation = Integer.parseInt(lineScanner.next());
-            /*System.out.println("Input: " 
-            + typeOfShip + i_position 
-            + j_position + orientation);*/
         }
         lineScanner.close();
     }
 
     private static void cross(Grid PlayerGrid, IntPair positionToHit, ArrayList<IntPair> possiblePositions){
         /* 1st position -> (i-1, j) */
-        if(PlayerGrid.isUnknown(positionToHit.i_pos-1, positionToHit.j_pos)){
-            System.out.println("Message 1");
+        if(PlayerGrid.isUnknown(positionToHit.i_pos-1, positionToHit.j_pos))
             possiblePositions.add(new IntPair(positionToHit.i_pos-1, positionToHit.j_pos));
-        }
+        
         /* 2nd position -> (i+1, j) */        
-        if(PlayerGrid.isUnknown(positionToHit.i_pos+1, positionToHit.j_pos)){
-            System.out.println("Message 2");
+        if(PlayerGrid.isUnknown(positionToHit.i_pos+1, positionToHit.j_pos))
             possiblePositions.add(new IntPair(positionToHit.i_pos+1, positionToHit.j_pos));
-        }
+
         /* 3rd position -> (i, j-1) */    
-        if(PlayerGrid.isUnknown(positionToHit.i_pos, positionToHit.j_pos-1)){
-            System.out.println("Message 3");
+        if(PlayerGrid.isUnknown(positionToHit.i_pos, positionToHit.j_pos-1))
             possiblePositions.add(new IntPair(positionToHit.i_pos, positionToHit.j_pos-1));
-        }
+    
         /* 4th position -> (i, j+1) */    
-        if(PlayerGrid.isUnknown(positionToHit.i_pos, positionToHit.j_pos+1)){  
-            System.out.println("Message 4");
+        if(PlayerGrid.isUnknown(positionToHit.i_pos, positionToHit.j_pos+1))
             possiblePositions.add(new IntPair(positionToHit.i_pos, positionToHit.j_pos+1));
-        }
+        
         /* Note: the validity of the positions (e.g. if i<0)
         is checked in the isUnknown function */
     }
 
     private static void setAIOrientation(Grid PlayerGrid, ArrayList<IntPair> possiblePositions){
         if(positionInQuestion == null) return;
-        System.out.println("positionInQuestion is (" + positionInQuestion.i_pos + "," + positionInQuestion.j_pos + ")");
+
         boolean vertical;
         if((!PlayerGrid.isUnknown(positionInQuestion.i_pos-1, positionInQuestion.j_pos)
         && !PlayerGrid.isUnknown(positionInQuestion.i_pos+1, positionInQuestion.j_pos))
@@ -79,32 +72,22 @@ public class Main {
         /* If orientation is vertical, remove all horizontal possiblePositions (2 columns) 
         and vice versa. This works since we are examining one ship at a time */
         if(vertical){
-            //possiblePositions.remove(new IntPair(positionToHit.i_pos-1, positionToHit.j_pos));
-            //possiblePositions.remove(new IntPair(positionToHit.i_pos+1, positionToHit.j_pos));
-            System.out.println("About to delete columns: " + (positionInQuestion.j_pos-1) + " and " + (positionInQuestion.j_pos+1));
             for(int i=0; i<10; i++){
                 try{
-                    if(possiblePositions.remove(new IntPair(positionInQuestion.i_pos+i, positionInQuestion.j_pos-1)))
-                        System.out.println("Deleted");
+                    possiblePositions.remove(new IntPair(i, positionInQuestion.j_pos-1));
                 } catch(Exception arrayIndexOutOfBoundsException){System.out.println("For some reason exception for i=" + i);}
                 try{
-                    if(possiblePositions.remove(new IntPair(positionInQuestion.i_pos+i, positionInQuestion.j_pos+1)))
-                        System.out.println("Deleted");
+                    possiblePositions.remove(new IntPair(i, positionInQuestion.j_pos+1));
                 } catch(Exception arrayIndexOutOfBoundsException){System.out.println("For some reason exception for i=" + i);}
             }
         }
         else{
-            //possiblePositions.remove(new IntPair(positionToHit.i_pos, positionToHit.j_pos-1));
-            //possiblePositions.remove(new IntPair(positionToHit.i_pos, positionToHit.j_pos+1));
-            System.out.println("About to delete rows: " + (positionInQuestion.i_pos-1) + " and " + (positionInQuestion.i_pos+1));
             for(int i=0; i<10; i++){
                 try{
-                    if(possiblePositions.remove(new IntPair((positionInQuestion.i_pos-1), (positionInQuestion.j_pos+i))))
-                        System.out.println("Deleted");
+                    possiblePositions.remove(new IntPair((positionInQuestion.i_pos-1), i));
                 } catch(Exception arrayIndexOutOfBoundsException){System.out.println("For some reason exception for i=" + i);}
                 try{
-                    if(possiblePositions.remove(new IntPair((positionInQuestion.i_pos+1), (positionInQuestion.j_pos+i))))
-                        System.out.println("Deleted");
+                    possiblePositions.remove(new IntPair((positionInQuestion.i_pos+1), i));
                 } catch(Exception arrayIndexOutOfBoundsException){System.out.println("For some reason exception for i=" + i);}
             }    
         }
