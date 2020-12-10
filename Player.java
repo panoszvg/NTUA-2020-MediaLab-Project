@@ -33,6 +33,7 @@ public class Player {
             ArrayList<IntPair> temp = new ArrayList<IntPair>();
             temp = this.shipArray[i].getShipPosition();
             for(int j=0; j<this.shipArray[i].getOccupyingSpaces(); j++){
+                //System.out.println(temp.get(j).i_pos + "," + temp.get(j).j_pos);
                 if(temp.get(j).equals(position)) return i;
             }
         }

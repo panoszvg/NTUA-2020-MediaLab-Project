@@ -52,6 +52,14 @@ public class Ship {
         else return "Hit";
     }
 
+    /* If it has only been hit once return true -
+    needed to know where to aim (for Enemy Player) */
+    public boolean firstTimeHit(){
+        if(this.timesHit == 1) return true;
+        return false;
+    }
+
+    /* If a Ship is hit increase timesHit counter */
     public void isHit(){
         this.timesHit++;
     }

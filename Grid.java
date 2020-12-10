@@ -80,6 +80,7 @@ class Grid{
         }
     }
 
+    /* Returns true if position hasn't been hit yet */
     public boolean isUnknown(int i, int j){
         try{
             if(this.board[i][j] == 0 
@@ -88,13 +89,29 @@ class Grid{
         catch(Exception arrayIndexOutOfBoundsException){
             return false;
         }
-        finally{}
         return false;
     }
 
+    /* Returns true if position is Hit Sea (3) */
+    public boolean isHitSea(int i, int j){
+        try{
+            if(this.board[i][j] == 3) return true;
+        }
+        catch(Exception arrayIndexOutOfBoundsException){
+            return false;
+        }
+        return false;
+    }
+
+    /* Returns true if position is Hit Ship (2) */
     public boolean wasHit(IntPair position){
-        if(this.board[position.i_pos][position.j_pos] == 2) return true;
-        else return false;
+        try{
+            if(this.board[position.i_pos][position.j_pos] == 2) return true;
+        }
+        catch(Exception arrayIndexOutOfBoundsException){
+            return false;
+        }
+        return false;
     }
 
 }
