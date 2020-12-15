@@ -73,9 +73,10 @@ class Grid{
     }
 
     /* Set a specific position (i,j) as a specific input (setNumber) */
-    public void Set(int i, int j, int setNumber){
-        if(i<0 || i>10 || j<0 || j>10) ;//Throw InvalidNumberToSet Exception
+    public void Set(int i, int j, int setNumber) throws OversizeException, OverlapTilesException {
+        if(i<0 || i>10 || j<0 || j>10) throw new OversizeException("OversizeException");
         else {
+            if(this.board[i][j] == 1) throw new OverlapTilesException("OverlapTilesException");
             this.board[i][j] = setNumber;
         }
     }
