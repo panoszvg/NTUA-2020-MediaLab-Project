@@ -4,7 +4,7 @@ public class Player {
     private String name;
     private int points;
     private int moves;
-    Ship[] shipArray;
+    protected Ship[] shipArray;
 
     /* Initalizes Player class with Name, Points
     (initially 0) and Moves (initially 40) */
@@ -13,11 +13,6 @@ public class Player {
         this.points = 0;
         this.moves = 40;
         this.shipArray = new Ship[5];
-        this.shipArray[0] = new Ship("Carrier");
-        this.shipArray[1] = new Ship("Battleship");
-        this.shipArray[2] = new Ship("Cruiser");
-        this.shipArray[3] = new Ship("Submarine");
-        this.shipArray[4] = new Ship("Destroyer");
     }
 
     /* Prints Player Statistics - for debugging */

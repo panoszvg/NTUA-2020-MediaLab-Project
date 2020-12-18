@@ -115,4 +115,15 @@ class Grid{
         return false;
     }
 
+    /* Returns true if position is Ship (1) */
+    public boolean isShip(IntPair position){
+        try{
+            if(this.board[position.i_pos][position.j_pos] == 1) return true;
+        }
+        catch(Exception arrayIndexOutOfBoundsException){
+            return false;
+        }
+        return false;
+    }
+
 }

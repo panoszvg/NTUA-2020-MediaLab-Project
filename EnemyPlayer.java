@@ -14,11 +14,9 @@ and then initializes EnemyPlayer-specific parameters
 
         AIOption = false;
         this.enemyChoices = new Vector<IntPair>();
-        IntPair temp = new IntPair(0, 0);
         for(int i=0; i<10; i++)
             for(int j=0; j<10; j++){
-                temp = new IntPair(i, j);
-                enemyChoices.add(temp);
+                enemyChoices.add(new IntPair(i, j));
             }
         System.out.println(enemyChoices.size());
     }

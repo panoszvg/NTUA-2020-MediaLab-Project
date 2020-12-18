@@ -126,4 +126,5 @@ public class Ship {
     public ArrayList<IntPair> getShipPosition() {
         return shipPosition;
     }
+
 }

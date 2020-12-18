@@ -111,6 +111,8 @@ public class Main extends ReadFromFile {
         }
         catch(OversizeException oversizeException){System.out.println(oversizeException.getMessage()); return;}
         catch (OverlapTilesException overlapTilesException){System.out.println(overlapTilesException.getMessage()); return;}
+        catch (AdjacentTilesException adjacentTilesException){System.out.println(adjacentTilesException.getMessage()); return;}
+        catch (InvalidCountException invalidCountException){System.out.println(invalidCountException.getMessage()); return;}
         PlayerGrid.printUnfiltered();
         EnemyGrid.printUnfiltered();
     
