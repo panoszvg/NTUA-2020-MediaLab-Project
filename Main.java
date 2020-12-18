@@ -1,7 +1,39 @@
 import java.util.*;
+import java.io.*;
 
 public class Main extends ReadFromFile {
     
+    private static void printTables(Player Player, EnemyPlayer EnemyPlayer ,Grid PlayerGrid, Grid EnemyGrid){
+        System.out.print("Player's Points: " + String.format("%-" + 6 + "s", Player.getPoints()) + "|");
+        System.out.println("   Enemy's Points: " + EnemyPlayer.getPoints());
+        System.out.println();
+        for(int i=0; i<10; i++){
+            PlayerGrid.printRowUnfiltered(i);
+            EnemyGrid.printRowfiltered(i);
+        }
+        System.out.println();
+    }
+
+    private static IntPair getUserInput(Grid EnemyGrid, Scanner userInput){
+        boolean alreadyHit = false;
+        int uAP_i;
+        int uAP_j;
+        do{
+            if(alreadyHit)
+                System.out.print("That position is already hit, try another: ");
+            else alreadyHit = true;
+            uAP_i = userInput.nextInt();
+            uAP_j = userInput.nextInt();
+            if(uAP_i<0 || uAP_i>9 || uAP_j<0 || uAP_j>9) {
+                System.out.print("Please give valid position (0 <= i,j <= 9): ");
+                alreadyHit = false; /* so that the alreadyHit message is not displayed this time */
+                continue;
+            }
+        }
+        while(!EnemyGrid.Hit(uAP_i, uAP_j));
+        return new IntPair(uAP_i, uAP_j);
+    }
+
     private static void cross(Grid PlayerGrid, IntPair positionToHit, ArrayList<IntPair> possiblePositions){
         /*  
         We need to check these positions :
@@ -88,13 +120,14 @@ public class Main extends ReadFromFile {
             }    
         }
     }
-    else System.out.println("---->Didn't do anything in setAIOrientation");
+    //else System.out.println("---->Didn't do anything in setAIOrientation");
     }
 
     public static void main(String[] args) {
         
-      
-
+        Random rand = new Random();
+        boolean PlayerPlaysFirst = (rand.nextInt(2) == 0);
+        boolean playersShipsAllSunk = false;
         Grid PlayerGrid = new Grid();
         Grid EnemyGrid = new Grid();
 
@@ -103,7 +136,7 @@ public class Main extends ReadFromFile {
         ArrayList<IntPair> possiblePositions = new ArrayList<IntPair>();
 
         /*********
-         * Read from file - add exceptions, for now assume it is correct
+         * Read from file
          *********/
         
         try{
@@ -116,17 +149,62 @@ public class Main extends ReadFromFile {
         PlayerGrid.printUnfiltered();
         EnemyGrid.printUnfiltered();
     
-
-    while(true){
     // Start Game
+    while(true){
+    
+    /*Player turn*/
+    if(PlayerPlaysFirst){
+    System.out.print("Enter the coordinates (i, j) for your move: ");
+    Scanner userInput = new Scanner(new FilterInputStream(System.in) {
+        @Override
+        public void close() throws IOException {
+            // do nothing here ! 
+        }
+    });
+    
+    IntPair userAttackPosition = getUserInput(EnemyGrid, userInput);
+    userInput.close();
 
-    /*
-    
-    Player turn
-    
-    */
-    // Is Game Over? (1) -> Ships
-    //System.out.println("In loop with possiblePositions = " + possiblePositions.size());
+    System.out.println(); System.out.println(); System.out.println(); System.out.println(); System.out.println();
+
+
+    if(EnemyGrid.wasHit(userAttackPosition)){
+        /* Call isHit() to update timesHit variable */
+        EnemyPlayer.shipArray[EnemyPlayer.findShip(userAttackPosition)].isHit();
+        /* Increase Player points according to ship found in position */
+        Player.IncreasePoints(EnemyPlayer.shipArray[EnemyPlayer.findShip(userAttackPosition)].getShotPoints());
+        /* If ship is sunk increase Player points with Sink Bonus */
+        if(EnemyPlayer.shipArray[EnemyPlayer.findShip(userAttackPosition)].Condition() == "Sunk"){
+            Player.IncreasePoints(EnemyPlayer.shipArray[EnemyPlayer.findShip(userAttackPosition)].getSinkBonus());
+            System.out.println("You sunk a ship!");
+        }
+        else System.out.println("You hit a ship!");
+        System.out.println();
+        /* All ships sunk == every ship is sunk 
+        Therefore, if one isn't, make playersShipsAllSunk not true */    
+        playersShipsAllSunk = true;
+        for(int i=0; i<5; i++)
+            if(EnemyPlayer.shipArray[i].Condition() != "Sunk")
+                playersShipsAllSunk = false;
+    }
+    Player.MadeAMove();
+    // Is Game Over?
+    if((Player.getMoves() == EnemyPlayer.getMoves() && EnemyPlayer.getMoves() == 0) || playersShipsAllSunk) 
+    {
+        printTables(Player, EnemyPlayer, PlayerGrid, EnemyGrid);
+        System.out.println();
+        if (Player.getPoints() > EnemyPlayer.getPoints())
+            System.out.println("You won!");
+        else System.out.println("You lost.");
+        System.out.println();
+        break;
+    }
+    }
+    else PlayerPlaysFirst = true;
+
+
+    /*Enemy Turn*/
+
     IntPair positionToHit = new IntPair(0,0);
     /* Hit is done after the skeleton and if it doesn't succeed
     it returns false, thus re-entering the do-while */
@@ -158,68 +236,62 @@ public class Main extends ReadFromFile {
 
     setAIOrientation(PlayerGrid, possiblePositions);
 
-    /* If the positionToHit (that was hit) was where 
-    a ship was in the Grid, also update "Hit" status to Ship */
     if(PlayerGrid.wasHit(positionToHit)){
+        /* If the positionToHit (that was hit) was where 
+        a ship was in the Grid, also update "Hit" status to Ship 
+        and add points for hitting it to EnemyPlayer */
         Player.shipArray[Player.findShip(positionToHit)].isHit();
-        //System.out.println("A SHIP WAS HIT");
+        EnemyPlayer.IncreasePoints(Player.shipArray[Player.findShip(positionToHit)].getShotPoints());
 
         /* If it was the first time this ship was hit update positionInQuestion */
         if(Player.shipArray[Player.findShip(positionToHit)].Condition() == "Hit" && 
         Player.shipArray[Player.findShip(positionToHit)].firstTimeHit()){
             positionInQuestion = new IntPair(positionToHit.i_pos, positionToHit.j_pos);
-            //System.out.println("positionInQuestion is set.");
-            // System.out.println("About to enter setAIOrientation!!!!!");
-            // setAIOrientation(PlayerGrid, possiblePositions);
         }
         else{
             if(Player.shipArray[Player.findShip(positionToHit)].Condition() == "Sunk"){
-                //System.out.println("Ship was sunk ---> removing all possiblePositions");
+                EnemyPlayer.IncreasePoints(Player.shipArray[Player.findShip(positionToHit)].getSinkBonus());
                 possiblePositions.clear();
-                //System.out.println("Confirm ---------> Size of possiblePositions = " + possiblePositions.size());
                 positionInQuestion = null;
             }
         }
     }
 
-
     setAIOrientation(PlayerGrid, possiblePositions);
-
 
     /* If a ship is hit enable AI Option */
     for(int i=0; i<5; i++){
         if(Player.shipArray[i].Condition() == "Hit") {
-            //System.out.println("Ship #" + i + " is hit  ->  AI Option is enabled");    
             EnemyPlayer.enableAIOption();
             break;
         }
-        EnemyPlayer.disableAIOption();
+        EnemyPlayer.disableAIOption(); 
     }
-
 
     /* If AI Option is enabled add new possible moves */    
-    if(EnemyPlayer.getAIOption()){
-    //System.out.println("positionToHit:  i = " + positionToHit.i_pos + "  j = " + positionToHit.j_pos);
-    
-    if(PlayerGrid.wasHit(positionToHit))
+    if(EnemyPlayer.getAIOption() && PlayerGrid.wasHit(positionToHit))
         cross(PlayerGrid, positionToHit, possiblePositions);
-    }
 
     setAIOrientation(PlayerGrid, possiblePositions);
+    playersShipsAllSunk = true;
+    for(int i=0; i<5; i++){
+        if(EnemyPlayer.shipArray[i].Condition() != "Sunk") 
+            playersShipsAllSunk = false;
+    }
     EnemyPlayer.MadeAMove();
-    // System.out.print("possiblePositions after turn = " + possiblePositions.size() + " -> ");
-    // for(int j=0; j<possiblePositions.size(); j++)
-    //     System.out.print("(" + possiblePositions.get(j).i_pos + "," + possiblePositions.get(j).j_pos + ")   ");
-    // System.out.println();
-    PlayerGrid.printFiltered();
-
-    /*
     
-    Enemy Turn
-    
-    */
-    // Is Game Over? (2) -> Ships -> Moves
-    if(EnemyPlayer.getMoves() == 0) break;
+    printTables(Player, EnemyPlayer, PlayerGrid, EnemyGrid);
+    System.out.println();System.out.println();
+    // Is Game Over?
+    if((Player.getMoves() == EnemyPlayer.getMoves() && EnemyPlayer.getMoves() == 0) || playersShipsAllSunk) 
+    {
+        System.out.println();
+        if (Player.getPoints() > EnemyPlayer.getPoints())
+            System.out.println("You won!");
+        else System.out.println("You lost.");
+        System.out.println();
+        break;
+    }
     }
     }
 }

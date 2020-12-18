@@ -55,9 +55,35 @@ class Grid{
         System.out.println();
     }
 
+    public void printRowUnfiltered(int i){
+        for(int j=0; j<10; j++)
+            System.out.print(board[i][j] + " ");
+        System.out.print("   |   ");
+    }
+
+    public void printRowfiltered(int i){
+        for(int j=0; j<10; j++)
+        switch(board[i][j]){
+        case 0:
+            System.out.print("- ");
+            break;
+        case 1:
+            System.out.print("- ");
+            break;
+        case 2:
+            System.out.print("X ");
+            break;
+        case 3:
+            System.out.print("O ");
+            break;    
+        }
+            System.out.println();
+    }
+
     /* Hits the position (i,j) it is given - returns true if it succeeds */
     public boolean Hit(int i, int j){
-        switch(this.board[i][j]){
+        try{
+            switch(this.board[i][j]){
             case 0: /* Sea */
                 this.board[i][j] = 3; /* becomes Hit Sea */
                 break;
@@ -68,6 +94,10 @@ class Grid{
                 return false;
             case 3: /* Hit Sea - is already hit */
                 return false;
+            }
+        }
+        catch(Exception arrayIndexOutOfBoundsException){
+            return false;
         }
         return true;
     }
@@ -117,6 +147,17 @@ class Grid{
 
     /* Returns true if position is Ship (1) */
     public boolean isShip(IntPair position){
+        try{
+            if(this.board[position.i_pos][position.j_pos] == 1) return true;
+        }
+        catch(Exception arrayIndexOutOfBoundsException){
+            return false;
+        }
+        return false;
+    }
+
+    /* Returns true if position is Ship (1) */
+    public boolean isSea(IntPair position){
         try{
             if(this.board[position.i_pos][position.j_pos] == 1) return true;
         }
