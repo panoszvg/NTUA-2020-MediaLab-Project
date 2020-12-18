@@ -116,6 +116,31 @@ public class ReadFromFile {
                         try{
                             EnemyGrid.Set(EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos, 
                             EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos, 1);
+                        
+                            if(((j == 0) /* before first block */
+                                && ((orientation == 1) 
+                                    ? EnemyGrid.isShip(new IntPair(EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos,
+                                    EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos-1)) 
+                                    : EnemyGrid.isShip(new IntPair(EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos-1,
+                                    EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos)))) 
+                            || ((j == EnemyPlayer.shipArray[typeOfShip-1].getOccupyingSpaces()-1) /* after last block */
+                                && ((orientation == 1) 
+                                    ? EnemyGrid.isShip(new IntPair(EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos,
+                                    EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos+1))
+                                    : EnemyGrid.isShip(new IntPair(EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos+1,
+                                    EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos))))) 
+                                throw new AdjacentTilesException("AdjacentTilesException");
+                            if((orientation == 1)
+                                ? (EnemyGrid.isShip(new IntPair(EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos+1,
+                                    EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos)) 
+                                || EnemyGrid.isShip(new IntPair(EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos-1,
+                                    EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos))
+                                )
+                                : (EnemyGrid.isShip(new IntPair(EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos,
+                                    EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos+1)) 
+                                || EnemyGrid.isShip(new IntPair(EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos-1,
+                                    EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos-1))))
+                                throw new AdjacentTilesException("AdjacentTilesException");
                         }
                         catch(OversizeException oversizeException){throw oversizeException;}
                         catch (OverlapTilesException overlapTilesException){throw overlapTilesException;}
