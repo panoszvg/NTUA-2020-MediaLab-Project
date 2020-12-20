@@ -5,6 +5,7 @@ public class ReadFromFile {
   
     public static Integer typeOfShip, i_position, j_position, orientation;
     public static IntPair possiblePositionsErrorIntPair, positionInQuestion;
+    public static int inputCounter = 0;
 
         /* Function to assist file input
     Source: https://knpcode.com/java-programs/how-to-read-delimited-file-in-java/ 
@@ -55,8 +56,11 @@ public class ReadFromFile {
             else 
                 sc = new Scanner(new File("/home/panos/Desktop/MediaLab/enemy_SCENARIO-ID.txt"));
             
+            inputCounter = 0;
             while (sc.hasNextLine()) {
                 String str = sc.nextLine();
+                inputCounter++;
+                if(inputCounter > 5) throw new InvalidCountException("InvalidCountException");
                 parseData(str);
                 IntPair temp = new IntPair(i_position, j_position); /* is local to while, no need to free memory */
                 if(i==0){
