@@ -52,9 +52,9 @@ public class ReadFromFile {
         for(int i=0; i<2; i++)
         try {
             if(i==0)
-                sc = new Scanner(new File("/home/panos/Desktop/MediaLab/player_SCENARIO-ID.txt"));
+                sc = new Scanner(new File("./player_SCENARIO-ID.txt"));
             else 
-                sc = new Scanner(new File("/home/panos/Desktop/MediaLab/enemy_SCENARIO-ID.txt"));
+                sc = new Scanner(new File("./enemy_SCENARIO-ID.txt"));
             
             inputCounter = 0;
             while (sc.hasNextLine()) {
