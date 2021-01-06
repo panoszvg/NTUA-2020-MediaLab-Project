@@ -1,7 +1,7 @@
 import java.util.*;
 import java.io.*;
 
-public class Main extends ReadFromFile {
+public class Gameplay extends ReadFromFile {
     
     private static void printTables(Player Player, EnemyPlayer EnemyPlayer ,Grid PlayerGrid, Grid EnemyGrid){
         System.out.print("Player's Points: " + String.format("%-" + 6 + "s", Player.getPoints()) + "|");
@@ -123,7 +123,7 @@ public class Main extends ReadFromFile {
     //else System.out.println("---->Didn't do anything in setAIOrientation");
     }
 
-    public static void main(String[] args) {
+    public void gameplay(String[] args) {
         
         Random rand = new Random();
         boolean PlayerPlaysFirst = (rand.nextInt(2) == 0);
