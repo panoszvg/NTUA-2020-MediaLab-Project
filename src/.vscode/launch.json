@@ -6,6 +6,14 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch MainApp",
+            "request": "launch",
+            "vmArgs": "--module-path=../lib/javafx-sdk-11.0.2/lib --add-modules=javafx.controls",
+            "mainClass": "MainApp",
+            "projectName": "src_437f8aa0"
+        },
+        {
+            "type": "java",
             "name": "Launch Current File",
             "request": "launch",
             "mainClass": "${file}"
