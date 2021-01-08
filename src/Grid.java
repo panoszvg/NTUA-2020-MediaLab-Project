@@ -167,4 +167,8 @@ class Grid{
         return false;
     }
 
+    public int getPosition(int i, int j){
+        return this.board[i][j];
+    }
+
 }

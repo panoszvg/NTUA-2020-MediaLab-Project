@@ -3,6 +3,22 @@ import java.io.*;
 
 public class Gameplay extends ReadFromFile {
     
+    private boolean PlayerPlaysFirst;
+    private boolean playersShipsAllSunk;
+    private Grid PlayerGrid;
+    public Grid getPlayerGrid() {
+        return PlayerGrid;
+    }
+    private Grid EnemyGrid;
+    public Grid getEnemyGrid() {
+        return EnemyGrid;
+    }
+
+    private Player Player;
+    private EnemyPlayer EnemyPlayer;
+    private ArrayList<IntPair> possiblePositions;
+
+
     private static void printTables(Player Player, EnemyPlayer EnemyPlayer ,Grid PlayerGrid, Grid EnemyGrid){
         System.out.print("Player's Points: " + String.format("%-" + 6 + "s", Player.getPoints()) + "|");
         System.out.println("   Enemy's Points: " + EnemyPlayer.getPoints());
@@ -14,25 +30,26 @@ public class Gameplay extends ReadFromFile {
         System.out.println();
     }
 
-    private static IntPair getUserInput(Grid EnemyGrid, Scanner userInput){
-        boolean alreadyHit = false;
-        int uAP_i;
-        int uAP_j;
-        do{
-            if(alreadyHit)
-                System.out.print("That position is already hit, try another: ");
-            else alreadyHit = true;
-            uAP_i = userInput.nextInt();
-            uAP_j = userInput.nextInt();
-            if(uAP_i<0 || uAP_i>9 || uAP_j<0 || uAP_j>9) {
-                System.out.print("Please give valid position (0 <= i,j <= 9): ");
-                alreadyHit = false; /* so that the alreadyHit message is not displayed this time */
-                continue;
-            }
-        }
-        while(!EnemyGrid.Hit(uAP_i, uAP_j));
-        return new IntPair(uAP_i, uAP_j);
-    }
+    // private static IntPair getUserInput(Grid EnemyGrid, Scanner userInput){
+    //     boolean alreadyHit = false;
+    //     int uAP_i;
+    //     int uAP_j;
+    //     do{
+    //         if(alreadyHit)
+    //             System.out.print("That position is already hit, try another: ");
+    //         else alreadyHit = true;
+            
+    //         uAP_i = userInput.nextInt();
+    //         uAP_j = userInput.nextInt();
+    //         if(uAP_i<0 || uAP_i>9 || uAP_j<0 || uAP_j>9) {
+    //             System.out.print("Please give valid position (0 <= i,j <= 9): ");
+    //             alreadyHit = false; /* so that the alreadyHit message is not displayed this time */
+    //             continue;
+    //         }
+    //     }
+    //     while(!EnemyGrid.Hit(uAP_i, uAP_j));
+    //     return new IntPair(uAP_i, uAP_j);
+    // }
 
     private static void cross(Grid PlayerGrid, IntPair positionToHit, ArrayList<IntPair> possiblePositions){
         /*  
@@ -123,17 +140,17 @@ public class Gameplay extends ReadFromFile {
     //else System.out.println("---->Didn't do anything in setAIOrientation");
     }
 
-    public void gameplay(String[] args) {
+    public void gameplay() {
         
         Random rand = new Random();
-        boolean PlayerPlaysFirst = (rand.nextInt(2) == 0);
-        boolean playersShipsAllSunk = false;
-        Grid PlayerGrid = new Grid();
-        Grid EnemyGrid = new Grid();
+        PlayerPlaysFirst = (rand.nextInt(2) == 0);
+        playersShipsAllSunk = false;
+        PlayerGrid = new Grid();
+        EnemyGrid = new Grid();
 
-        Player Player = new Player("Player");
-        EnemyPlayer EnemyPlayer = new EnemyPlayer("Enemy");
-        ArrayList<IntPair> possiblePositions = new ArrayList<IntPair>();
+        Player = new Player("Player");
+        EnemyPlayer = new EnemyPlayer("Enemy");
+        possiblePositions = new ArrayList<IntPair>();
 
         /*********
          * Read from file
@@ -148,26 +165,32 @@ public class Gameplay extends ReadFromFile {
         catch (InvalidCountException invalidCountException){System.out.println(invalidCountException.getMessage()); return;}
         PlayerGrid.printUnfiltered();
         EnemyGrid.printUnfiltered();
+    }
+   
     
-    // Start Game
-    while(true){
+    public IntPair[] oneTurn(int i_coord, int j_coord) throws AlreadyHitException {
     
+    IntPair[] positionsHitThisTurn = new IntPair[2];
+
     /*Player turn*/
     if(PlayerPlaysFirst){
     System.out.print("Enter the coordinates (i, j) for your move: ");
-    Scanner userInput = new Scanner(new FilterInputStream(System.in) {
-        @Override
-        public void close() throws IOException {
-            // do nothing here ! 
-        }
-    });
+    // Scanner userInput = new Scanner(new FilterInputStream(System.in) {
+    //     @Override
+    //     public void close() throws IOException {
+    //         // do nothing here ! 
+    //     }
+    // });
     
-    IntPair userAttackPosition = getUserInput(EnemyGrid, userInput);
-    userInput.close();
+    // IntPair userAttackPosition = getUserInput(EnemyGrid, userInput);
+    // userInput.close();
+
+    if(!EnemyGrid.Hit(i_coord, j_coord)) throw new AlreadyHitException("Position is already hit");
+    positionsHitThisTurn[0] = new IntPair(i_coord, j_coord);
 
     System.out.println(); System.out.println(); System.out.println(); System.out.println(); System.out.println();
 
-
+    IntPair userAttackPosition = new IntPair(i_coord, j_coord);
     if(EnemyGrid.wasHit(userAttackPosition)){
         /* Call isHit() to update timesHit variable */
         EnemyPlayer.shipArray[EnemyPlayer.findShip(userAttackPosition)].isHit();
@@ -197,7 +220,6 @@ public class Gameplay extends ReadFromFile {
             System.out.println("You won!");
         else System.out.println("You lost.");
         System.out.println();
-        break;
     }
     }
     else PlayerPlaysFirst = true;
@@ -233,6 +255,8 @@ public class Gameplay extends ReadFromFile {
         }
     }
     while (!PlayerGrid.Hit(positionToHit.i_pos, positionToHit.j_pos));
+
+    positionsHitThisTurn[1] = new IntPair(positionToHit.i_pos, positionToHit.j_pos);
 
     setAIOrientation(PlayerGrid, possiblePositions);
 
@@ -290,8 +314,9 @@ public class Gameplay extends ReadFromFile {
             System.out.println("You won!");
         else System.out.println("You lost.");
         System.out.println();
-        break;
     }
-    }
+
+    return positionsHitThisTurn;
+
     }
 }
