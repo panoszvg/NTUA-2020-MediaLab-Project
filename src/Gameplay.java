@@ -1,9 +1,11 @@
 import java.util.*;
-import java.io.*;
 
 public class Gameplay extends ReadFromFile {
     
     private boolean PlayerPlaysFirst;
+    public boolean getPlayerPlaysFirst() {
+        return PlayerPlaysFirst;
+    }
     private boolean playersShipsAllSunk;
     private Grid PlayerGrid;
     public Grid getPlayerGrid() {
@@ -171,7 +173,8 @@ public class Gameplay extends ReadFromFile {
     public IntPair[] oneTurn(int i_coord, int j_coord) throws AlreadyHitException {
     
     IntPair[] positionsHitThisTurn = new IntPair[2];
-
+    positionsHitThisTurn[0] = new IntPair(-1, -1); // to avoid null in case player doesn't play first
+        
     /*Player turn*/
     if(PlayerPlaysFirst){
     System.out.print("Enter the coordinates (i, j) for your move: ");

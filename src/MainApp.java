@@ -65,6 +65,10 @@ public class MainApp extends Application {
         /* Start a game */
         Gameplay Game = new Gameplay();
         Game.gameplay();
+        if(!Game.getPlayerPlaysFirst()){
+            IntPair[] temp = new IntPair[2];
+            try{temp = Game.oneTurn(0, 0);} catch(AlreadyHitException e) {}
+        }
 
         /* Create main Pane -> BorderPane and scene */
         BorderPane root = new BorderPane();  
@@ -92,13 +96,14 @@ public class MainApp extends Application {
         /* Create player/enemy grids -> GridPane */
         GridPane playerGrid = new GridPane();
         GridPane enemyGrid = new GridPane();
+        playerBoard = new Cell[10][10];
+        enemyBoard = new Cell[10][10];
         /* Place grids in HBox and format it */
         playBox.getChildren().addAll(playerGrid, enemyGrid);
         playBox.setPadding(new Insets(150, 20, 20, 20));
         playBox.setSpacing(100);
         playBox.setAlignment(Pos.CENTER);
-        playerBoard = new Cell[10][10];
-        enemyBoard = new Cell[10][10];
+
 
         /* Create all cells for both grids */
         for(int row=0; row<10; row++)
@@ -111,6 +116,7 @@ public class MainApp extends Application {
                 playerGrid.add(playerBoard[row][col], col, row);
                 enemyGrid.add(enemyBoard[row][col], col, row);
             }
+        
         
 
         /* place HBox in the middle */    
@@ -135,6 +141,8 @@ public class MainApp extends Application {
                     try{
                         iCo = Integer.parseInt(iTextField.getText());
                         jCo = Integer.parseInt(jTextField.getText());
+                        iTextField.setText("");
+                        jTextField.setText("");
                         if(iCo < 1 || iCo > 10 || jCo < 1 || jCo > 10){
                             outputTextArea.setText("Please insert a valid number (1 <= i,j <= 10)");
                             return;
@@ -147,9 +155,9 @@ public class MainApp extends Application {
                         IntPair[] updatePositions = new IntPair[2];
                         updatePositions = Game.oneTurn(iCo, jCo);
                         // update board
+                        if(updatePositions[0].i_pos != -1 && updatePositions[0].j_pos != -1)
+                            playerBoard[updatePositions[0].i_pos][updatePositions[0].j_pos].updatePosition(Game.getPlayerGrid().getPosition(updatePositions[0].i_pos, updatePositions[0].j_pos));
                         enemyBoard[updatePositions[1].i_pos][updatePositions[1].j_pos].updatePosition(Game.getEnemyGrid().getPosition(updatePositions[1].i_pos, updatePositions[1].j_pos));
-                        //playerBoard[updatePositions[0].i_pos][updatePositions[0].j_pos].updatePosition(Game.getPlayerGrid().getPosition(updatePositions[0].i_pos, updatePositions[0].j_pos));
-                         //enemyBoard[updatePositions[1].i_pos][updatePositions[1].j_pos].updatePosition(Game.getEnemyGrid().getPosition(updatePositions[1].i_pos, updatePositions[1].j_pos));
                     } catch(AlreadyHitException ahe){
                         outputTextArea.setText("That position was already hit, please choose a different one");
                     }
