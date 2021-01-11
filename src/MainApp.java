@@ -114,11 +114,11 @@ public class MainApp extends Application implements Initializable {
         int iCo = 0;
         int jCo = 0; 
         try{
-            iCo = Integer.parseInt(iTextField.getText());
-            jCo = Integer.parseInt(jTextField.getText());
+            iCo = Integer.parseInt(iTextField.getText()); iCo--; // Immediate
+            jCo = Integer.parseInt(jTextField.getText()); jCo--; // Conversion
             iTextField.setText("");
             jTextField.setText("");
-            if(iCo < 1 || iCo > 10 || jCo < 1 || jCo > 10){
+            if(iCo < 0 || iCo > 9 || jCo < 0 || jCo > 9){
                 outputTextArea.setText("Please insert a valid number (1 <= i,j <= 10)");
                 return;
             }
@@ -130,7 +130,7 @@ public class MainApp extends Application implements Initializable {
             IntPair updatePositions = new IntPair(-1, -1);
             updatePositions = Game.oneTurn(iCo, jCo);
             // update board
-            enemyBoard[iCo-1][jCo-1].updatePosition(Game.getEnemyGrid().getPosition((iCo-1), (jCo-1)));
+            enemyBoard[iCo][jCo].updatePosition(Game.getEnemyGrid().getPosition((iCo), (jCo)));
             playerBoard[updatePositions.i_pos][updatePositions.j_pos].updatePosition(Game.getPlayerGrid().getPosition(updatePositions.i_pos, updatePositions.j_pos));
         } catch(AlreadyHitException ahe){
             outputTextArea.setText("That position was already hit, please choose a different one");

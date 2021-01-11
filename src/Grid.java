@@ -168,6 +168,7 @@ class Grid{
     }
 
     public int getPosition(int i, int j){
+        System.out.println("i:" + i + " j:" + j);
         return this.board[i][j];
     }
 
