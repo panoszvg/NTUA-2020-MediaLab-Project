@@ -7,11 +7,11 @@ public class Gameplay extends ReadFromFile {
         return PlayerPlaysFirst;
     }
     private boolean playersShipsAllSunk;
-    private Grid PlayerGrid;
+    private static Grid PlayerGrid;
     public Grid getPlayerGrid() {
         return PlayerGrid;
     }
-    private Grid EnemyGrid;
+    private static Grid EnemyGrid;
     public Grid getEnemyGrid() {
         return EnemyGrid;
     }
@@ -170,10 +170,9 @@ public class Gameplay extends ReadFromFile {
     }
    
     
-    public IntPair[] oneTurn(int i_coord, int j_coord) throws AlreadyHitException {
+    public IntPair oneTurn(int i_coord, int j_coord) throws AlreadyHitException {
     
-    IntPair[] positionsHitThisTurn = new IntPair[2];
-    positionsHitThisTurn[0] = new IntPair(-1, -1); // to avoid null in case player doesn't play first
+    IntPair positionsHitThisTurn;
         
     /*Player turn*/
     if(PlayerPlaysFirst){
@@ -189,7 +188,6 @@ public class Gameplay extends ReadFromFile {
     // userInput.close();
 
     if(!EnemyGrid.Hit(i_coord, j_coord)) throw new AlreadyHitException("Position is already hit");
-    positionsHitThisTurn[0] = new IntPair(i_coord, j_coord);
 
     System.out.println(); System.out.println(); System.out.println(); System.out.println(); System.out.println();
 
@@ -259,7 +257,7 @@ public class Gameplay extends ReadFromFile {
     }
     while (!PlayerGrid.Hit(positionToHit.i_pos, positionToHit.j_pos));
 
-    positionsHitThisTurn[1] = new IntPair(positionToHit.i_pos, positionToHit.j_pos);
+    positionsHitThisTurn = new IntPair(positionToHit.i_pos, positionToHit.j_pos);
 
     setAIOrientation(PlayerGrid, possiblePositions);
 
