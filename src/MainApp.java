@@ -1,22 +1,16 @@
-import java.io.IOException;
-import javafx.fxml.Initializable;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.NumberBinding;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
+import javafx.fxml.Initializable;
 import javafx.scene.layout.GridPane;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 import javafx.scene.control.*;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import java.net.URL;
@@ -29,7 +23,45 @@ public class MainApp extends Application implements Initializable {
     @FXML
     private GridPane enemyGrid;
     @FXML
+    private Label playerShipsAlive;
+    public void setPlayerShipsAlive(int a) {
+        this.playerShipsAlive.setText("Ships Alive: " + a);
+    }
+    @FXML
+    private Label playerSuccessfulShots;
+    public void setPlayerSuccessfulShots(String s) {
+        this.playerSuccessfulShots.setText("Successful Shots Average: " + s + "%");
+    }
+    @FXML
+    private Label playerPoints;
+    public void setPlayerPoints(int a) {
+        this.playerPoints.setText("Player Points: " + a);;
+    }
+    @FXML
+    private Label enemyShipsAlive;
+    public void setEnemyShipsAlive(int a) {
+        this.enemyShipsAlive.setText("Ships Alive: " + a);
+    }
+    @FXML
+    private Label enemySuccessfulShots;
+    public void setEnemySuccessfulShots(String s) {
+        this.enemySuccessfulShots.setText("Successful Shots Average: " + s + "%");
+    }
+    @FXML
+    private Label enemyPoints;
+    public void setEnemyPoints(int a) {
+        this.enemyPoints.setText("Enemy Points: " + a);;
+    }
+    @FXML
     private Label outputTextArea;
+    public void setOutputTextArea(String s) {
+        this.outputTextArea.setText(s);
+    }
+    @FXML
+    private Label inputTextArea;
+    public void setInputTextArea(String s) {
+        this.inputTextArea.setText(s);
+    }
     @FXML
     private TextField iTextField;
     @FXML
@@ -80,8 +112,25 @@ public class MainApp extends Application implements Initializable {
 
     }
 
+    
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        initialize();
+    }
+
+    public void initialize() {
+    
+        setInputTextArea("Enter the coordinates (i, j) for your move: ");
+        setPlayerShipsAlive(5);
+        setEnemyShipsAlive(5);
+        /* Start a game */
+        Game = new Gameplay();
+        Game.gameplay();
+        if(!Game.getPlayerPlaysFirst()){
+            try{IntPair temp = Game.oneTurn(this, 0, 0);} catch(AlreadyHitException e) {}
+        }
+        
         NumberBinding rectsAreaSize = Bindings.min(playerGrid.heightProperty(), playerGrid.widthProperty());
         playerBoard = new Cell[10][10];
         enemyBoard = new Cell[10][10];
@@ -119,22 +168,67 @@ public class MainApp extends Application implements Initializable {
             iTextField.setText("");
             jTextField.setText("");
             if(iCo < 0 || iCo > 9 || jCo < 0 || jCo > 9){
-                outputTextArea.setText("Please insert a valid number (1 <= i,j <= 10)");
+                setInputTextArea("Please insert a valid number (1 <= i,j <= 10)");
                 return;
             }
         } catch(NumberFormatException nfe) {
-            outputTextArea.setText("Please insert valid input (numbers)");
+            setInputTextArea("Please insert valid input (numbers)");
             return;
         }
         try{ 
             IntPair updatePositions = new IntPair(-1, -1);
-            updatePositions = Game.oneTurn(iCo, jCo);
+            updatePositions = Game.oneTurn(this, iCo, jCo);
             // update board
             enemyBoard[iCo][jCo].updatePosition(Game.getEnemyGrid().getPosition((iCo), (jCo)));
             playerBoard[updatePositions.i_pos][updatePositions.j_pos].updatePosition(Game.getPlayerGrid().getPosition(updatePositions.i_pos, updatePositions.j_pos));
         } catch(AlreadyHitException ahe){
-            outputTextArea.setText("That position was already hit, please choose a different one");
+            setInputTextArea("That position was already hit, please choose a different one");
         }
+        
+        /* Update ShipsAlive */
+        int pShipsAlive = 5;
+        int eShipsAlive = 5;
+        for(int i=0; i<5; i++){
+            if(Game.getPlayer().shipArray[i].Condition() == "Sunk") pShipsAlive--;
+            if(Game.getEnemyPlayer().shipArray[i].Condition() == "Sunk") eShipsAlive--;
+        }
+        setPlayerShipsAlive(pShipsAlive);
+        setEnemyShipsAlive(eShipsAlive);
+        /* Update Successful Shots Average */
+        setPlayerSuccessfulShots(String.format("%.2f", ((double)Game.getPlayer().getSuccessfulShots()/(40 - Game.getPlayer().getMoves()))*100));
+        setEnemySuccessfulShots(String.format("%.2f", ((double)Game.getEnemyPlayer().getSuccessfulShots()/(40 - Game.getEnemyPlayer().getMoves()))*100));
+        /* Update Points */
+        setPlayerPoints(Game.getPlayer().getPoints());
+        setEnemyPoints(Game.getEnemyPlayer().getPoints());
+    }
+
+    @FXML
+    public void startAction(ActionEvent t){
+        //System.out.println("Begun new game");
+        initialize();
+    }
+
+    // Load
+    @FXML
+    public void loadAction(ActionEvent t){
+        
+        //
+        
+        
+        
+        
+        try{
+            Gameplay.read(Game.getPlayer(), Game.getPlayerGrid(), Game.getEnemyPlayer(), Game.getEnemyGrid());
+        }
+        catch(OversizeException oversizeException){System.out.println(oversizeException.getMessage()); return;}
+        catch (OverlapTilesException overlapTilesException){System.out.println(overlapTilesException.getMessage()); return;}
+        catch (AdjacentTilesException adjacentTilesException){System.out.println(adjacentTilesException.getMessage()); return;}
+        catch (InvalidCountException invalidCountException){System.out.println(invalidCountException.getMessage()); return;}
+    }
+
+    @FXML
+    public void exitAction(ActionEvent t){
+        Platform.exit();
     }
 
 
@@ -145,13 +239,6 @@ public class MainApp extends Application implements Initializable {
     @Override
     public void start(Stage primaryStage) {
         
-        /* Start a game */
-        Game = new Gameplay();
-        Game.gameplay();
-        if(!Game.getPlayerPlaysFirst()){
-            IntPair temp = new IntPair(-1, -1);
-            try{temp = Game.oneTurn(0, 0);} catch(AlreadyHitException e) {}
-        }
         Parent root = null;
         
         try{
@@ -160,124 +247,6 @@ public class MainApp extends Application implements Initializable {
         primaryStage.setScene(new Scene(root,1100,700));  
         primaryStage.setTitle("MediaLab Battleship");
         primaryStage.show();  
-
-        // /* Create main Pane -> BorderPane and scene */
-        // BorderPane root = new BorderPane();  
-        // Scene scene = new Scene(root,1100,700);
-        // /* Create Menu */  
-        // MenuBar menubar = new MenuBar();  
-        // Menu ApplicationMenu = new Menu("Application");  
-        // MenuItem AppItem1=new MenuItem("Start");
-        // AppItem1.setOnAction(new EventHandler<ActionEvent>(){
-        //     public void handle(ActionEvent t){
-        //         Gameplay Game = new Gameplay();
-        //         Game.gameplay();
-        //     }
-        // });
-        // MenuItem AppItem2=new MenuItem("Load");  
-        // MenuItem AppItem3=new MenuItem("Exit");  
-        // Menu DetailsMenu=new Menu("Details");  
-        // MenuItem DetailItem1=new MenuItem("Enemy Ships");  
-        // MenuItem DetailItem2=new MenuItem("Player Ships");  
-        // MenuItem DetailItem3=new MenuItem("Enemy Shots");  
-        // /* Place menu on top of BorderPane */
-        // root.setTop(menubar);
-        // /* Create HBox to place the two grids */
-        // HBox playBox = new HBox();
-        // /* Create player/enemy grids -> GridPane */
-        // playerGrid = new GridPane();
-        // enemyGrid = new GridPane();
-        // playerBoard = new Cell[10][10];
-        // enemyBoard = new Cell[10][10];
-        // // /* Place grids in HBox and format it */
-        // // playBox.getChildren().addAll(playerGrid, enemyGrid);
-        // // playBox.setPadding(new Insets(150, 20, 20, 20));
-        // // playBox.setSpacing(100);
-        // // playBox.setAlignment(Pos.CENTER);
-
-        // /* Create all cells for both grids */
-        // for(int row=0; row<10; row++)
-        //     for(int col=0; col<10; col++){
-        //         playerBoard[row][col] = new Cell(row, col, true);
-        //         if(Game.getPlayerGrid().isShip(new IntPair(row, col))){
-        //             playerBoard[row][col].isShip();
-        //         }
-        //         enemyBoard[row][col] = new Cell(row, col, false);
-        //         // GridPane.setRowIndex(playerBoard[row][col], row);
-        //         // GridPane.setColumnIndex(enemyBoard[row][col], col);
-        //         //////////////////////////////////////////////// Fix implementation
-        //         playerGrid.add(playerBoard[row][col], col, row);
-        //         enemyGrid.add(enemyBoard[row][col], col, row);
-        //     }
-        
-        
-
-        // /* place HBox in the middle */    
-        // root.setCenter(playBox);
-
-        // Label i_coord = new Label();
-        // Label j_coord = new Label();
-        // TextField iTextField = new TextField();
-        // TextField jTextField = new TextField();
-        // Button hitButton = new Button("Hit!");
-
-        // VBox texts = new VBox();
-        // Label outputTextArea = new Label();
-        // outputTextArea.setPrefWidth(300);
-        // outputTextArea.setAlignment(Pos.CENTER);
-        // // outputTextArea.setEditable(false);
-
-        // hitButton.setOnAction(new EventHandler<ActionEvent>(){
-        //     public void handle(ActionEvent t){
-        //             int iCo = 0;
-        //             int jCo = 0; 
-        //             try{
-        //                 iCo = Integer.parseInt(iTextField.getText());
-        //                 jCo = Integer.parseInt(jTextField.getText());
-        //                 iTextField.setText("");
-        //                 jTextField.setText("");
-        //                 if(iCo < 1 || iCo > 10 || jCo < 1 || jCo > 10){
-        //                     outputTextArea.setText("Please insert a valid number (1 <= i,j <= 10)");
-        //                     return;
-        //                 }
-        //             } catch(NumberFormatException nfe) {
-        //                 outputTextArea.setText("Please insert valid input (numbers)");
-        //                 return;
-        //             }
-        //             try{ 
-        //                 IntPair[] updatePositions = new IntPair[2];
-        //                 updatePositions = Game.oneTurn(iCo, jCo);
-        //                 // update board
-        //                 if(updatePositions[0].i_pos != -1 && updatePositions[0].j_pos != -1)
-        //                     playerBoard[updatePositions[0].i_pos][updatePositions[0].j_pos].updatePosition(Game.getPlayerGrid().getPosition(updatePositions[0].i_pos, updatePositions[0].j_pos));
-        //                 enemyBoard[updatePositions[1].i_pos][updatePositions[1].j_pos].updatePosition(Game.getEnemyGrid().getPosition(updatePositions[1].i_pos, updatePositions[1].j_pos));
-        //             } catch(AlreadyHitException ahe){
-        //                 outputTextArea.setText("That position was already hit, please choose a different one");
-        //             }
-        //     }
-        // });
-        
-        
-        // GridPane insertCoordinates = new GridPane();
-        // insertCoordinates.addColumn(0, iTextField, i_coord);
-        // insertCoordinates.addColumn(1, jTextField, j_coord);
-        // insertCoordinates.addColumn(2, hitButton);
-        // insertCoordinates.setHgap(20);
-        // insertCoordinates.setPadding(new Insets(10, 10, 40, 10));
-        // insertCoordinates.setAlignment(Pos.CENTER);
-        // texts.getChildren().addAll(outputTextArea, insertCoordinates);
-        // texts.setAlignment(Pos.CENTER);
-        // root.setBottom(texts);
-
-        // /* Format App Window */
-        // ApplicationMenu.getItems().addAll(AppItem1, AppItem2, AppItem3);  
-        // menubar.getMenus().addAll(ApplicationMenu, DetailsMenu);
-        // DetailsMenu.getItems().addAll(DetailItem1, DetailItem2, DetailItem3);  
-        // primaryStage.setScene(scene);  
-        // primaryStage.setTitle("MediaLab Battleship");
-        // primaryStage.show();  
-
-
         
     }
 }

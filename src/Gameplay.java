@@ -1,5 +1,7 @@
 import java.util.*;
 
+import javafx.scene.control.Label;
+
 public class Gameplay extends ReadFromFile {
     
     private boolean PlayerPlaysFirst;
@@ -17,7 +19,15 @@ public class Gameplay extends ReadFromFile {
     }
 
     private Player Player;
+    public Player getPlayer() {
+        return Player;
+    }
+
     private EnemyPlayer EnemyPlayer;
+    public EnemyPlayer getEnemyPlayer() {
+        return EnemyPlayer;
+    }
+
     private ArrayList<IntPair> possiblePositions;
 
 
@@ -32,26 +42,6 @@ public class Gameplay extends ReadFromFile {
         System.out.println();
     }
 
-    // private static IntPair getUserInput(Grid EnemyGrid, Scanner userInput){
-    //     boolean alreadyHit = false;
-    //     int uAP_i;
-    //     int uAP_j;
-    //     do{
-    //         if(alreadyHit)
-    //             System.out.print("That position is already hit, try another: ");
-    //         else alreadyHit = true;
-            
-    //         uAP_i = userInput.nextInt();
-    //         uAP_j = userInput.nextInt();
-    //         if(uAP_i<0 || uAP_i>9 || uAP_j<0 || uAP_j>9) {
-    //             System.out.print("Please give valid position (0 <= i,j <= 9): ");
-    //             alreadyHit = false; /* so that the alreadyHit message is not displayed this time */
-    //             continue;
-    //         }
-    //     }
-    //     while(!EnemyGrid.Hit(uAP_i, uAP_j));
-    //     return new IntPair(uAP_i, uAP_j);
-    // }
 
     private static void cross(Grid PlayerGrid, IntPair positionToHit, ArrayList<IntPair> possiblePositions){
         /*  
@@ -170,13 +160,14 @@ public class Gameplay extends ReadFromFile {
     }
    
     
-    public IntPair oneTurn(int i_coord, int j_coord) throws AlreadyHitException {
+    public IntPair oneTurn(MainApp a, int i_coord, int j_coord) throws AlreadyHitException {
     
     IntPair positionsHitThisTurn;
         
     /*Player turn*/
     if(PlayerPlaysFirst){
-    System.out.print("Enter the coordinates (i, j) for your move: ");
+    a.setInputTextArea("Enter the coordinates (i, j) for your move: ");
+    //System.out.print("Enter the coordinates (i, j) for your move: ");
     // Scanner userInput = new Scanner(new FilterInputStream(System.in) {
     //     @Override
     //     public void close() throws IOException {
@@ -193,6 +184,7 @@ public class Gameplay extends ReadFromFile {
 
     IntPair userAttackPosition = new IntPair(i_coord, j_coord);
     if(EnemyGrid.wasHit(userAttackPosition)){
+        Player.madeASuccessfulShot();
         /* Call isHit() to update timesHit variable */
         EnemyPlayer.shipArray[EnemyPlayer.findShip(userAttackPosition)].isHit();
         /* Increase Player points according to ship found in position */
@@ -200,9 +192,10 @@ public class Gameplay extends ReadFromFile {
         /* If ship is sunk increase Player points with Sink Bonus */
         if(EnemyPlayer.shipArray[EnemyPlayer.findShip(userAttackPosition)].Condition() == "Sunk"){
             Player.IncreasePoints(EnemyPlayer.shipArray[EnemyPlayer.findShip(userAttackPosition)].getSinkBonus());
-            System.out.println("You sunk a ship!");
+            a.setOutputTextArea("You sunk a ship!");
         }
-        else System.out.println("You hit a ship!");
+        else a.setOutputTextArea("You hit a ship!");
+
         System.out.println();
         /* All ships sunk == every ship is sunk 
         Therefore, if one isn't, make playersShipsAllSunk not true */    
@@ -218,8 +211,8 @@ public class Gameplay extends ReadFromFile {
         printTables(Player, EnemyPlayer, PlayerGrid, EnemyGrid);
         System.out.println();
         if (Player.getPoints() > EnemyPlayer.getPoints())
-            System.out.println("You won!");
-        else System.out.println("You lost.");
+            a.setOutputTextArea("You won!");
+        else a.setOutputTextArea("You lost.");
         System.out.println();
     }
     }
@@ -262,6 +255,7 @@ public class Gameplay extends ReadFromFile {
     setAIOrientation(PlayerGrid, possiblePositions);
 
     if(PlayerGrid.wasHit(positionToHit)){
+        EnemyPlayer.madeASuccessfulShot();
         /* If the positionToHit (that was hit) was where 
         a ship was in the Grid, also update "Hit" status to Ship 
         and add points for hitting it to EnemyPlayer */
@@ -312,8 +306,8 @@ public class Gameplay extends ReadFromFile {
     {
         System.out.println();
         if (Player.getPoints() > EnemyPlayer.getPoints())
-            System.out.println("You won!");
-        else System.out.println("You lost.");
+            a.setOutputTextArea("You won!");
+        else a.setOutputTextArea("You lost.");
         System.out.println();
     }
 

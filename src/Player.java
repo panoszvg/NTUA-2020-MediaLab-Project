@@ -5,6 +5,7 @@ public class Player {
     private int points;
     private int moves;
     protected Ship[] shipArray;
+    private int successfulShots;
 
     /* Initalizes Player class with Name, Points
     (initially 0) and Moves (initially 40) */
@@ -13,6 +14,7 @@ public class Player {
         this.points = 0;
         this.moves = 40;
         this.shipArray = new Ship[5];
+        this.successfulShots = 0;
     }
 
     /* Prints Player Statistics - for debugging */
@@ -40,6 +42,11 @@ public class Player {
         this.moves--;
     }
 
+    /* Player made a successful shot */
+    public void madeASuccessfulShot(){
+        this.successfulShots++;
+    }
+
     /* Increase Player points */
     public void IncreasePoints(int points){
         this.points += points;
@@ -51,6 +58,10 @@ public class Player {
     
     public int getPoints() {
         return points;
+    }
+
+    public int getSuccessfulShots() {
+        return successfulShots;
     }
 
 }
