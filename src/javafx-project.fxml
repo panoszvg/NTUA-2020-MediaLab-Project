@@ -28,11 +28,17 @@
         </Menu>
         <Menu mnemonicParsing="false" text="Details">
           <items>
-            <MenuItem mnemonicParsing="false" text="Enemy Ships" />
-            <MenuItem mnemonicParsing="false" text="Player Ships" />
-            <MenuItem mnemonicParsing="false" text="Enemy Shots" />
+            <MenuItem fx:id="enemyShips" mnemonicParsing="false" onAction="#enemyShipsAction" text="Enemy Ships" />
+            <MenuItem fx:id="playerShots" mnemonicParsing="false" onAction="#playerShotsAction" text="Player Shots" />
+            <MenuItem fx:id="enemyShots" mnemonicParsing="false" onAction="#enemyShotsAction" text="Enemy Shots" />
           </items>
         </Menu>
+            <Menu mnemonicParsing="false" text="History">
+               <items>
+                  <MenuItem fx:id="playerHistory" mnemonicParsing="false" onAction="#playerHistoryAction" text="Player History" />
+                  <MenuItem fx:id="enemyHistory" mnemonicParsing="false" onAction="#enemyHistoryAction" text="Enemy History" />
+               </items>
+            </Menu>
       </menus>
     </MenuBar>
       <BorderPane prefHeight="689.0" prefWidth="1100.0">
@@ -68,9 +74,9 @@
                   </Label>
                   <HBox alignment="CENTER" prefHeight="100.0" prefWidth="550.0" spacing="30.0">
                      <children>
-                        <TextField fx:id="iTextField" />
-                        <TextField fx:id="jTextField" />
-                        <Button fx:id="hitButton" mnemonicParsing="false" onAction="#hitAction" text="Button" />
+                        <TextField fx:id="iTextField" onKeyPressed="#moveToNextTextField" />
+                        <TextField fx:id="jTextField" onKeyPressed="#handleEnterPressed" />
+                        <Button fx:id="hitButton" mnemonicParsing="false" onAction="#hitAction" prefWidth="50.0" text="Hit" />
                      </children>
                   </HBox>
                </children>

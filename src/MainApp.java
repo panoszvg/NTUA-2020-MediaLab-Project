@@ -11,9 +11,13 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 import javafx.scene.control.*;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import java.net.URL;
+import java.util.LinkedList;
 import java.util.ResourceBundle;
  
 public class MainApp extends Application implements Initializable {
@@ -73,6 +77,9 @@ public class MainApp extends Application implements Initializable {
     private static Cell[][] playerBoard;
     private static Cell[][] enemyBoard;
 
+    LinkedList<IntPair> playerShotsList;
+    LinkedList<IntPair> enemyShotsList;
+
     public class Cell extends Rectangle {
         
         public Cell(int x, int y, boolean playerBoard){
@@ -83,7 +90,6 @@ public class MainApp extends Application implements Initializable {
         }
 
         public void updatePosition(int action){
-            System.out.println("Action; " + action);
             switch(action){
                 case 0:
                     break;
@@ -124,12 +130,11 @@ public class MainApp extends Application implements Initializable {
         setInputTextArea("Enter the coordinates (i, j) for your move: ");
         setPlayerShipsAlive(5);
         setEnemyShipsAlive(5);
+        playerShotsList = new LinkedList<IntPair>();
+        enemyShotsList = new LinkedList<IntPair>();
         /* Start a game */
         Game = new Gameplay();
         Game.gameplay();
-        if(!Game.getPlayerPlaysFirst()){
-            try{IntPair temp = Game.oneTurn(this, 0, 0);} catch(AlreadyHitException e) {}
-        }
         
         NumberBinding rectsAreaSize = Bindings.min(playerGrid.heightProperty(), playerGrid.widthProperty());
         playerBoard = new Cell[10][10];
@@ -156,10 +161,19 @@ public class MainApp extends Application implements Initializable {
                 continue;
             }
 
+        if(!Game.getPlayerPlaysFirst()){
+            try{
+            IntPair temp = Game.oneTurn(this, 0, 0);
+            enemyShotsList.add(new IntPair(temp.i_pos+1, temp.j_pos+1));
+            playerBoard[temp.i_pos][temp.j_pos].updatePosition(Game.getPlayerGrid().getPosition(temp.i_pos, temp.j_pos));
+            } catch(AlreadyHitException e) {}
+        }
+
     }
 
     @FXML
     public void hitAction(ActionEvent t){
+        setOutputTextArea("");
         int iCo = 0;
         int jCo = 0; 
         try{
@@ -172,16 +186,22 @@ public class MainApp extends Application implements Initializable {
                 return;
             }
         } catch(NumberFormatException nfe) {
+            iTextField.setText("");
+            jTextField.setText("");
             setInputTextArea("Please insert valid input (numbers)");
             return;
         }
         try{ 
             IntPair updatePositions = new IntPair(-1, -1);
             updatePositions = Game.oneTurn(this, iCo, jCo);
-            // update board
+            // update history & board
+            playerShotsList.add(new IntPair(iCo+1, jCo+1));
             enemyBoard[iCo][jCo].updatePosition(Game.getEnemyGrid().getPosition((iCo), (jCo)));
+            enemyShotsList.add(new IntPair(updatePositions.i_pos+1, updatePositions.j_pos+1));
             playerBoard[updatePositions.i_pos][updatePositions.j_pos].updatePosition(Game.getPlayerGrid().getPosition(updatePositions.i_pos, updatePositions.j_pos));
         } catch(AlreadyHitException ahe){
+            iTextField.setText("");
+            jTextField.setText("");
             setInputTextArea("That position was already hit, please choose a different one");
         }
         
@@ -213,9 +233,9 @@ public class MainApp extends Application implements Initializable {
     public void loadAction(ActionEvent t){
         
         //
-        
-        
-        
+        //
+        //
+        //
         
         try{
             Gameplay.read(Game.getPlayer(), Game.getPlayerGrid(), Game.getEnemyPlayer(), Game.getEnemyGrid());
@@ -231,6 +251,141 @@ public class MainApp extends Application implements Initializable {
         Platform.exit();
     }
 
+    @FXML
+    public void enemyShipsAction(ActionEvent t){
+        String str = "";
+        for(int i=0; i<5; i++){
+            str += (Game.getEnemyPlayer().shipArray[i].getType() + ": " + Game.getEnemyPlayer().shipArray[i].Condition() + '\n');
+        }
+        // enemyShipsPopup.show();
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.setTitle("Enemy Ships Condition");
+        alert.setHeaderText(null);
+        alert.setGraphic(null);
+        alert.setContentText(str);
+        alert.showAndWait();
+    }
+
+    @FXML
+    public void playerShotsAction(ActionEvent t){
+        String str = "";
+        for(int i=playerShotsList.size()-1; i>=((playerShotsList.size() < 5) ? 0 : playerShotsList.size()-5); i--){
+            int iList = playerShotsList.get(i).i_pos;
+            int jList = playerShotsList.get(i).j_pos;
+            int shotResult = Game.getEnemyGrid().getPosition(iList-1, jList-1);
+            String shipType = "";
+            if(Game.getEnemyGrid().wasHit(new IntPair(iList-1, jList-1)))
+                shipType = Game.getEnemyPlayer().shipArray[Game.getEnemyPlayer().findShip(new IntPair(iList-1, jList-1))].getType();
+            
+                str += "Position:{" + String.valueOf(iList) + "," + ((iList == 10 || jList == 10) ? "" : " ") + String.valueOf(jList) + "}    "
+                 + ((iList == 10 && jList == 10) ? "" : "  ") + ((iList != 10 && jList != 10) ? " " : "") + ((shotResult==2) ? "Hit -> " + shipType : "Missed") + '\n';
+        }
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.setTitle("Player Shots Information");
+        alert.setHeaderText(null);
+        alert.setGraphic(null);
+        alert.setContentText(str);
+        alert.showAndWait();
+    }
+
+    @FXML
+    public void enemyShotsAction(ActionEvent t){
+        String str = "";
+        for(int i=enemyShotsList.size()-1; i>=((enemyShotsList.size() < 5) ? 0 : enemyShotsList.size()-5); i--){
+            int iList = enemyShotsList.get(i).i_pos;
+            int jList = enemyShotsList.get(i).j_pos;
+            int shotResult = Game.getPlayerGrid().getPosition(iList-1, jList-1);
+            String shipType = "";
+            if(Game.getPlayerGrid().wasHit(new IntPair(iList-1, jList-1)))
+                shipType = Game.getPlayer().shipArray[Game.getPlayer().findShip(new IntPair(iList-1, jList-1))].getType();
+            
+                str += "Position:{" + String.valueOf(iList) + "," + ((iList == 10 || jList == 10) ? "" : " ") + String.valueOf(jList) + "}    "
+                 + ((iList == 10 && jList == 10) ? "" : "  ") + ((iList != 10 && jList != 10) ? " " : "") + ((shotResult==2) ? "Hit -> " + shipType : "Missed") + '\n';
+        }
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.setTitle("Enemy Shots Information");
+        alert.setHeaderText(null);
+        alert.setGraphic(null);
+        alert.setContentText(str);
+        alert.showAndWait();
+    }
+
+    @FXML
+    public void playerHistoryAction(ActionEvent t){
+        String str = "";
+        for(int i=playerShotsList.size()-1; i>=0; i--){
+            int iList = playerShotsList.get(i).i_pos;
+            int jList = playerShotsList.get(i).j_pos;
+            int shotResult = Game.getEnemyGrid().getPosition(iList-1, jList-1);
+            String shipType = "";
+            if(Game.getEnemyGrid().wasHit(new IntPair(iList-1, jList-1)))
+                shipType = Game.getEnemyPlayer().shipArray[Game.getEnemyPlayer().findShip(new IntPair(iList-1, jList-1))].getType();
+            
+                str += "Position:{" + String.valueOf(iList) + "," + ((iList == 10 || jList == 10) ? "" : " ") + String.valueOf(jList) + "}    "
+                 + ((iList == 10 && jList == 10) ? "" : "  ") + ((iList != 10 && jList != 10) ? " " : "") + ((shotResult==2) ? "Hit -> " + shipType : "Missed") + '\n';
+        }
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.setTitle("Player Shots History");
+        alert.setHeaderText(null);
+        alert.setGraphic(null);
+        alert.setContentText(str);
+        alert.showAndWait();
+    }
+
+    @FXML
+    public void enemyHistoryAction(ActionEvent t){
+        String str = "";
+        for(int i=enemyShotsList.size()-1; i>=0; i--){
+            int iList = enemyShotsList.get(i).i_pos;
+            int jList = enemyShotsList.get(i).j_pos;
+            int shotResult = Game.getPlayerGrid().getPosition(iList-1, jList-1);
+            String shipType = "";
+            if(Game.getPlayerGrid().wasHit(new IntPair(iList-1, jList-1)))
+                shipType = Game.getPlayer().shipArray[Game.getPlayer().findShip(new IntPair(iList-1, jList-1))].getType();
+            
+                str += "Position:{" + String.valueOf(iList) + "," + ((iList == 10 || jList == 10) ? "" : " ") + String.valueOf(jList) + "}    "
+                 + ((iList == 10 && jList == 10) ? "" : "  ") + ((iList != 10 && jList != 10) ? " " : "") + ((shotResult==2) ? "Hit -> " + shipType : "Missed") + '\n';
+        }
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.setTitle("Enemy Shots History");
+        alert.setHeaderText(null);
+        alert.setGraphic(null);
+        alert.setContentText(str);
+        alert.showAndWait();
+    }
+
+    @FXML
+    public void handleEnterPressed(KeyEvent event){
+        /* move left */
+        if (event.getCode() == KeyCode.LEFT) {
+            iTextField.requestFocus();    
+        }
+        if (event.getCode() == KeyCode.ENTER)
+            /* if no input in iTextField go there */
+            if(iTextField.getText().trim().isEmpty())
+                iTextField.requestFocus();
+            /* otherwise go there and Hit */
+            else {
+                iTextField.requestFocus();
+                hitAction(new ActionEvent());
+            }
+        
+
+    }
+
+    public void moveToNextTextField(KeyEvent event){
+        /* move right */
+        if (event.getCode() == KeyCode.RIGHT) {
+            jTextField.requestFocus();
+        }
+        /* if no input in jTextField go there */
+        if (event.getCode() == KeyCode.ENTER)
+            if (jTextField.getText().trim().isEmpty())
+                jTextField.requestFocus();
+            /* otherwise remain here and Hit */
+            else hitAction(new ActionEvent());
+        
+    }
 
     public static void main(String[] args) {
         launch(args);

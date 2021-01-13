@@ -1,7 +1,5 @@
 import java.util.*;
 
-import javafx.scene.control.Label;
-
 public class Gameplay extends ReadFromFile {
     
     private boolean PlayerPlaysFirst;
@@ -31,16 +29,16 @@ public class Gameplay extends ReadFromFile {
     private ArrayList<IntPair> possiblePositions;
 
 
-    private static void printTables(Player Player, EnemyPlayer EnemyPlayer ,Grid PlayerGrid, Grid EnemyGrid){
-        System.out.print("Player's Points: " + String.format("%-" + 6 + "s", Player.getPoints()) + "|");
-        System.out.println("   Enemy's Points: " + EnemyPlayer.getPoints());
-        System.out.println();
-        for(int i=0; i<10; i++){
-            PlayerGrid.printRowUnfiltered(i);
-            EnemyGrid.printRowfiltered(i);
-        }
-        System.out.println();
-    }
+    // private static void printTables(Player Player, EnemyPlayer EnemyPlayer ,Grid PlayerGrid, Grid EnemyGrid){
+    //     System.out.print("Player's Points: " + String.format("%-" + 6 + "s", Player.getPoints()) + "|");
+    //     System.out.println("   Enemy's Points: " + EnemyPlayer.getPoints());
+    //     System.out.println();
+    //     for(int i=0; i<10; i++){
+    //         PlayerGrid.printRowUnfiltered(i);
+    //         EnemyGrid.printRowfiltered(i);
+    //     }
+    //     System.out.println();
+    // }
 
 
     private static void cross(Grid PlayerGrid, IntPair positionToHit, ArrayList<IntPair> possiblePositions){
@@ -97,12 +95,10 @@ public class Gameplay extends ReadFromFile {
         ||
         (PlayerGrid.wasHit(new IntPair(positionInQuestion.i_pos+1, positionInQuestion.j_pos))) 
         ){
-            //System.out.println("Checking-->  (" + (positionInQuestion.i_pos-1) + "," + (positionInQuestion.j_pos) + ")");
             if(PlayerGrid.wasHit(new IntPair(positionInQuestion.i_pos-1, positionInQuestion.j_pos)))
                 vertical = true;
             else vertical = false;
         
-            //System.out.println("Checking-->  (" + (positionInQuestion.i_pos+1) + "," + (positionInQuestion.j_pos) + ")");
             if(PlayerGrid.wasHit(new IntPair(positionInQuestion.i_pos+1, positionInQuestion.j_pos)))
                 vertical = true;
 
@@ -155,10 +151,8 @@ public class Gameplay extends ReadFromFile {
         catch (OverlapTilesException overlapTilesException){System.out.println(overlapTilesException.getMessage()); return;}
         catch (AdjacentTilesException adjacentTilesException){System.out.println(adjacentTilesException.getMessage()); return;}
         catch (InvalidCountException invalidCountException){System.out.println(invalidCountException.getMessage()); return;}
-        PlayerGrid.printUnfiltered();
-        EnemyGrid.printUnfiltered();
     }
-   
+
     
     public IntPair oneTurn(MainApp a, int i_coord, int j_coord) throws AlreadyHitException {
     
@@ -167,20 +161,8 @@ public class Gameplay extends ReadFromFile {
     /*Player turn*/
     if(PlayerPlaysFirst){
     a.setInputTextArea("Enter the coordinates (i, j) for your move: ");
-    //System.out.print("Enter the coordinates (i, j) for your move: ");
-    // Scanner userInput = new Scanner(new FilterInputStream(System.in) {
-    //     @Override
-    //     public void close() throws IOException {
-    //         // do nothing here ! 
-    //     }
-    // });
-    
-    // IntPair userAttackPosition = getUserInput(EnemyGrid, userInput);
-    // userInput.close();
 
     if(!EnemyGrid.Hit(i_coord, j_coord)) throw new AlreadyHitException("Position is already hit");
-
-    System.out.println(); System.out.println(); System.out.println(); System.out.println(); System.out.println();
 
     IntPair userAttackPosition = new IntPair(i_coord, j_coord);
     if(EnemyGrid.wasHit(userAttackPosition)){
@@ -196,7 +178,6 @@ public class Gameplay extends ReadFromFile {
         }
         else a.setOutputTextArea("You hit a ship!");
 
-        System.out.println();
         /* All ships sunk == every ship is sunk 
         Therefore, if one isn't, make playersShipsAllSunk not true */    
         playersShipsAllSunk = true;
@@ -208,12 +189,10 @@ public class Gameplay extends ReadFromFile {
     // Is Game Over?
     if((Player.getMoves() == EnemyPlayer.getMoves() && EnemyPlayer.getMoves() == 0) || playersShipsAllSunk) 
     {
-        printTables(Player, EnemyPlayer, PlayerGrid, EnemyGrid);
-        System.out.println();
+        a.setInputTextArea("");
         if (Player.getPoints() > EnemyPlayer.getPoints())
             a.setOutputTextArea("You won!");
         else a.setOutputTextArea("You lost.");
-        System.out.println();
     }
     }
     else PlayerPlaysFirst = true;
@@ -299,16 +278,14 @@ public class Gameplay extends ReadFromFile {
     }
     EnemyPlayer.MadeAMove();
     
-    printTables(Player, EnemyPlayer, PlayerGrid, EnemyGrid);
-    System.out.println();System.out.println();
+    //printTables(Player, EnemyPlayer, PlayerGrid, EnemyGrid);
     // Is Game Over?
     if((Player.getMoves() == EnemyPlayer.getMoves() && EnemyPlayer.getMoves() == 0) || playersShipsAllSunk) 
     {
-        System.out.println();
+        a.setInputTextArea("");
         if (Player.getPoints() > EnemyPlayer.getPoints())
             a.setOutputTextArea("You won!");
         else a.setOutputTextArea("You lost.");
-        System.out.println();
     }
 
     return positionsHitThisTurn;
