@@ -22,7 +22,7 @@
         <Menu mnemonicParsing="false" text="Application">
           <items>
             <MenuItem mnemonicParsing="false" onAction="#startAction" text="Start" />
-            <MenuItem mnemonicParsing="false" text="Load" />
+            <MenuItem mnemonicParsing="false" onAction="#loadAction" text="Load" />
             <MenuItem mnemonicParsing="false" onAction="#exitAction" text="Exit" />
           </items>
         </Menu>
@@ -45,12 +45,18 @@
          <center>
             <HBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" BorderPane.alignment="CENTER">
                <children>
+                  <GridPane id="playerGrid" fx:id="playerGridLabels" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="300.0" minWidth="300.0">
+                     <HBox.margin>
+                        <Insets />
+                     </HBox.margin>
+                  </GridPane>
                   <GridPane id="playerGrid" fx:id="playerGrid" alignment="CENTER" gridLinesVisible="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="300.0" minWidth="300.0">
                     
                      <HBox.margin>
-                        <Insets bottom="50.0" left="50.0" right="100.0" top="25.0" />
+                        <Insets bottom="50.0" right="100.0" top="25.0" />
                      </HBox.margin>
                   </GridPane>
+                  <GridPane fx:id="enemyGridLabels" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="300.0" minWidth="300.0" />
                   <GridPane fx:id="enemyGrid" alignment="CENTER" gridLinesVisible="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="300.0" minWidth="300.0">
                     
                      <HBox.margin>

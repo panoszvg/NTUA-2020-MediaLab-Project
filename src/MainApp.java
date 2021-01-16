@@ -23,7 +23,11 @@ import java.util.ResourceBundle;
 public class MainApp extends Application implements Initializable {
 
     @FXML
+    private GridPane playerGridLabels;
+    @FXML
     private GridPane playerGrid;
+    @FXML
+    private GridPane enemyGridLabels;
     @FXML
     private GridPane enemyGrid;
     @FXML
@@ -80,6 +84,15 @@ public class MainApp extends Application implements Initializable {
     LinkedList<IntPair> playerShotsList;
     LinkedList<IntPair> enemyShotsList;
 
+    private boolean noExceptions;
+    public boolean getNoExceptions(){
+        return noExceptions;
+    }
+    public void setNoExceptions(boolean noExceptions) {
+        this.noExceptions = noExceptions;
+    }
+    private static String SCENARIO_ID;
+
     public class Cell extends Rectangle {
         
         public Cell(int x, int y, boolean playerBoard){
@@ -116,6 +129,10 @@ public class MainApp extends Application implements Initializable {
             setFill(Color.BLACK);
         }
 
+        public void isLabel(){
+            setFill(Color.WHITE);
+        }
+
     }
 
     
@@ -130,50 +147,28 @@ public class MainApp extends Application implements Initializable {
         setInputTextArea("Enter the coordinates (i, j) for your move: ");
         setPlayerShipsAlive(5);
         setEnemyShipsAlive(5);
+        setPlayerSuccessfulShots("0.00");
+        setEnemySuccessfulShots("0.00");
+        setPlayerPoints(0);
+        setEnemyPoints(0);
         playerShotsList = new LinkedList<IntPair>();
         enemyShotsList = new LinkedList<IntPair>();
         /* Start a game */
-        Game = new Gameplay();
-        Game.gameplay();
-        
-        NumberBinding rectsAreaSize = Bindings.min(playerGrid.heightProperty(), playerGrid.widthProperty());
-        playerBoard = new Cell[10][10];
-        enemyBoard = new Cell[10][10];
-
-        /* Create all cells for both grids */
-        for(int row=0; row<10; row++)
-            for(int col=0; col<10; col++){
-                playerBoard[row][col] = new Cell(row, col, true);
-                if(Game.getPlayerGrid().isShip(new IntPair(row, col))){
-                    playerBoard[row][col].isShip();
-                }
-                enemyBoard[row][col] = new Cell(row, col, false);
-                playerGrid.add(playerBoard[row][col], col, row);
-                enemyGrid.add(enemyBoard[row][col], col, row);
-                playerBoard[row][col].xProperty().bind(rectsAreaSize.multiply(row).divide(10));
-                playerBoard[row][col].yProperty().bind(rectsAreaSize.multiply(col).divide(10));
-                playerBoard[row][col].heightProperty().bind(rectsAreaSize.divide(10));
-                playerBoard[row][col].widthProperty().bind(playerBoard[row][col].heightProperty());
-                enemyBoard[row][col].heightProperty().bind(rectsAreaSize.divide(10));
-                enemyBoard[row][col].widthProperty().bind(enemyBoard[row][col].heightProperty());
-                enemyBoard[row][col].xProperty().bind(rectsAreaSize.multiply(row).divide(10));
-                enemyBoard[row][col].yProperty().bind(rectsAreaSize.multiply(col).divide(10));
-                continue;
-            }
-
-        if(!Game.getPlayerPlaysFirst()){
-            try{
-            IntPair temp = Game.oneTurn(this, 0, 0);
-            enemyShotsList.add(new IntPair(temp.i_pos+1, temp.j_pos+1));
-            playerBoard[temp.i_pos][temp.j_pos].updatePosition(Game.getPlayerGrid().getPosition(temp.i_pos, temp.j_pos));
-            } catch(AlreadyHitException e) {}
-        }
+        noExceptions = true;
+        createGame();
 
     }
 
-    @FXML
     public void hitAction(ActionEvent t){
         setOutputTextArea("");
+
+        if(!noExceptions){
+            createAlert("Can't play this scenario", "Please provide a valid scenario to start the game.");
+            iTextField.setText("");
+            jTextField.setText("");
+            return;
+        }
+
         int iCo = 0;
         int jCo = 0; 
         try{
@@ -222,36 +217,32 @@ public class MainApp extends Application implements Initializable {
         setEnemyPoints(Game.getEnemyPlayer().getPoints());
     }
 
-    @FXML
     public void startAction(ActionEvent t){
-        //System.out.println("Begun new game");
         initialize();
-    }
-
-    // Load
-    @FXML
-    public void loadAction(ActionEvent t){
-        
-        //
-        //
-        //
-        //
-        
-        try{
-            Gameplay.read(Game.getPlayer(), Game.getPlayerGrid(), Game.getEnemyPlayer(), Game.getEnemyGrid());
+        if(!Game.getPlayerPlaysFirst()){
+            try{
+            IntPair temp = Game.oneTurn(this, 0, 0);
+            enemyShotsList.add(new IntPair(temp.i_pos+1, temp.j_pos+1));
+            playerBoard[temp.i_pos][temp.j_pos].updatePosition(Game.getPlayerGrid().getPosition(temp.i_pos, temp.j_pos));
+            } catch(AlreadyHitException e) {}
         }
-        catch(OversizeException oversizeException){System.out.println(oversizeException.getMessage()); return;}
-        catch (OverlapTilesException overlapTilesException){System.out.println(overlapTilesException.getMessage()); return;}
-        catch (AdjacentTilesException adjacentTilesException){System.out.println(adjacentTilesException.getMessage()); return;}
-        catch (InvalidCountException invalidCountException){System.out.println(invalidCountException.getMessage()); return;}
     }
 
-    @FXML
+    public void loadAction(ActionEvent t){
+
+            TextInputDialog lDialog = new TextInputDialog("SCENARIO-ID");
+            lDialog.setHeaderText("Select Game Scenario-ID:");
+            lDialog.showAndWait();
+            SCENARIO_ID = lDialog.getEditor().getText();
+            Game = new Gameplay();
+            Game.gameplay(this, SCENARIO_ID);
+            
+    }
+
     public void exitAction(ActionEvent t){
         Platform.exit();
     }
 
-    @FXML
     public void enemyShipsAction(ActionEvent t){
         String str = "";
         for(int i=0; i<5; i++){
@@ -266,7 +257,6 @@ public class MainApp extends Application implements Initializable {
         alert.showAndWait();
     }
 
-    @FXML
     public void playerShotsAction(ActionEvent t){
         String str = "";
         for(int i=playerShotsList.size()-1; i>=((playerShotsList.size() < 5) ? 0 : playerShotsList.size()-5); i--){
@@ -288,7 +278,6 @@ public class MainApp extends Application implements Initializable {
         alert.showAndWait();
     }
 
-    @FXML
     public void enemyShotsAction(ActionEvent t){
         String str = "";
         for(int i=enemyShotsList.size()-1; i>=((enemyShotsList.size() < 5) ? 0 : enemyShotsList.size()-5); i--){
@@ -310,7 +299,6 @@ public class MainApp extends Application implements Initializable {
         alert.showAndWait();
     }
 
-    @FXML
     public void playerHistoryAction(ActionEvent t){
         String str = "";
         for(int i=playerShotsList.size()-1; i>=0; i--){
@@ -332,7 +320,6 @@ public class MainApp extends Application implements Initializable {
         alert.showAndWait();
     }
 
-    @FXML
     public void enemyHistoryAction(ActionEvent t){
         String str = "";
         for(int i=enemyShotsList.size()-1; i>=0; i--){
@@ -354,7 +341,6 @@ public class MainApp extends Application implements Initializable {
         alert.showAndWait();
     }
 
-    @FXML
     public void handleEnterPressed(KeyEvent event){
         /* move left */
         if (event.getCode() == KeyCode.LEFT) {
@@ -384,11 +370,69 @@ public class MainApp extends Application implements Initializable {
                 jTextField.requestFocus();
             /* otherwise remain here and Hit */
             else hitAction(new ActionEvent());
-        
+    }
+
+    public void createAlert(String Title, String s){
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.setTitle("ALERT!");
+        alert.setHeaderText(Title);
+        alert.setGraphic(null);
+        alert.setContentText(s);
+        alert.showAndWait();
     }
 
     public static void main(String[] args) {
         launch(args);
+    }
+
+    public void createGame(){
+        Game = new Gameplay();
+
+        if(SCENARIO_ID == null) 
+            Game.gameplay(this, "default");
+        else Game.gameplay(this, SCENARIO_ID);
+
+
+        NumberBinding rectsAreaSize = Bindings.min(playerGrid.heightProperty(), playerGrid.widthProperty());
+        playerBoard = new Cell[10][10];
+        enemyBoard = new Cell[10][10];
+
+        /* Create all cells for both grids */
+        for(int row=0; row<10; row++){
+            for(int col=0; col<10; col++){
+
+                // Label elabel = new Label();
+                // elabel.setText(Integer.toString(col));
+                // playerGridLabels.add(elabel, col, 0);
+
+                playerBoard[row][col] = new Cell(row, col, true);
+                if(noExceptions && Game.getPlayerGrid().isShip(new IntPair(row, col))){
+                    playerBoard[row][col].isShip();
+                }
+                enemyBoard[row][col] = new Cell(row, col, false);
+                playerGrid.add(playerBoard[row][col], col, row);
+                enemyGrid.add(enemyBoard[row][col], col, row);
+                
+                playerBoard[row][col].xProperty().bind(rectsAreaSize.multiply(row).divide(10));
+                playerBoard[row][col].yProperty().bind(rectsAreaSize.multiply(col).divide(10));
+                playerBoard[row][col].heightProperty().bind(rectsAreaSize.divide(10));
+                playerBoard[row][col].widthProperty().bind(playerBoard[row][col].heightProperty());
+                
+                Label plabel = new Label();
+                plabel.setMinHeight(30.0);
+                plabel.setText(Integer.toString(row));
+                playerGridLabels.add(plabel, 0, row);
+
+
+                
+                enemyBoard[row][col].heightProperty().bind(rectsAreaSize.divide(10));
+                enemyBoard[row][col].widthProperty().bind(enemyBoard[row][col].heightProperty());
+                enemyBoard[row][col].xProperty().bind(rectsAreaSize.multiply(row).divide(10));
+                enemyBoard[row][col].yProperty().bind(rectsAreaSize.multiply(col).divide(10));
+
+            }
+        }
+
     }
 
     @Override
@@ -401,7 +445,7 @@ public class MainApp extends Application implements Initializable {
         } catch(Exception e){e.printStackTrace();}
         primaryStage.setScene(new Scene(root,1100,700));  
         primaryStage.setTitle("MediaLab Battleship");
-        primaryStage.show();  
-        
+        primaryStage.show();
+
     }
 }

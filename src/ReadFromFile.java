@@ -6,6 +6,7 @@ public class ReadFromFile {
     public static Integer typeOfShip, i_position, j_position, orientation;
     public static IntPair possiblePositionsErrorIntPair, positionInQuestion;
     public static int inputCounter = 0;
+    public static boolean fileNotFound = false; // some reason can't create Exception
 
         /* Function to assist file input
     Source: https://knpcode.com/java-programs/how-to-read-delimited-file-in-java/ 
@@ -46,15 +47,29 @@ public class ReadFromFile {
         }
     }
 
-    public static void read(Player Player, Grid PlayerGrid, EnemyPlayer EnemyPlayer, Grid EnemyGrid) 
+    public static void read(Player Player, Grid PlayerGrid, EnemyPlayer EnemyPlayer, Grid EnemyGrid, String SCENARIO_ID) 
     throws OversizeException, OverlapTilesException, AdjacentTilesException, InvalidCountException {
         Scanner sc = null;
         for(int i=0; i<2; i++)
         try {
             if(i==0)
-                sc = new Scanner(new File("./player_SCENARIO-ID.txt"));
+                {
+                    File file = new File("./player_" + SCENARIO_ID + ".txt");
+                    if (file.exists()) sc = new Scanner(file);
+                    else {
+                        fileNotFound = true;
+                        return;
+                    }
+                }
             else 
-                sc = new Scanner(new File("./enemy_SCENARIO-ID.txt"));
+                {
+                    File file = new File("./enemy_" + SCENARIO_ID + ".txt");
+                    if (file.exists()) sc = new Scanner(file);
+                    else {
+                        fileNotFound = true;
+                        return;
+                    }
+                }
             
             inputCounter = 0;
             while (sc.hasNextLine()) {
@@ -74,7 +89,12 @@ public class ReadFromFile {
                         try{
                             PlayerGrid.Set(Player.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos, 
                             Player.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos, 1);
-                            
+                        }
+                        catch (OversizeException oversizeException){throw oversizeException;}
+                        catch (OverlapTilesException overlapTilesException){throw overlapTilesException;}
+                    
+                        for(int j=0; j<Player.shipArray[typeOfShip-1].getOccupyingSpaces(); j++) {
+                        
                             /* if there is a ship adjacent throw Exception. We check:
                                 [X][1][1][1][X] 
                             (and vertically using orientation variable) on the first if and:   
@@ -107,10 +127,7 @@ public class ReadFromFile {
                                 || PlayerGrid.isShip(new IntPair(Player.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos,
                                     Player.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos-1))))
                                 throw new AdjacentTilesException("AdjacentTilesException");
-
-                        }
-                        catch (OversizeException oversizeException){throw oversizeException;}
-                        catch (OverlapTilesException overlapTilesException){throw overlapTilesException;}
+                    }
                 }
                 else{
                   /* For Enemy */
@@ -120,7 +137,11 @@ public class ReadFromFile {
                         try{
                             EnemyGrid.Set(EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos, 
                             EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos, 1);
-                        
+                        }
+                        catch(OversizeException oversizeException){throw oversizeException;}
+                        catch (OverlapTilesException overlapTilesException){throw overlapTilesException;}
+                
+                        for(int j=0; j<EnemyPlayer.shipArray[typeOfShip-1].getOccupyingSpaces(); j++){
                             if(((j == 0) /* before first block */
                                 && ((orientation == 1) 
                                     ? EnemyGrid.isShip(new IntPair(EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos,
@@ -142,12 +163,11 @@ public class ReadFromFile {
                                 )
                                 : (EnemyGrid.isShip(new IntPair(EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos,
                                     EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos+1)) 
-                                || EnemyGrid.isShip(new IntPair(EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos-1,
+                                || EnemyGrid.isShip(new IntPair(EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos,
                                     EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos-1))))
                                 throw new AdjacentTilesException("AdjacentTilesException");
                         }
-                        catch(OversizeException oversizeException){throw oversizeException;}
-                        catch (OverlapTilesException overlapTilesException){throw overlapTilesException;}
+
                 }
             }        
         } catch (IOException exp){

@@ -16,12 +16,12 @@ public class Gameplay extends ReadFromFile {
         return EnemyGrid;
     }
 
-    private Player Player;
+    private static Player Player;
     public Player getPlayer() {
         return Player;
     }
 
-    private EnemyPlayer EnemyPlayer;
+    private static EnemyPlayer EnemyPlayer;
     public EnemyPlayer getEnemyPlayer() {
         return EnemyPlayer;
     }
@@ -128,7 +128,7 @@ public class Gameplay extends ReadFromFile {
     //else System.out.println("---->Didn't do anything in setAIOrientation");
     }
 
-    public void gameplay() {
+    public void gameplay(MainApp a, String SCENARIO_ID) {
         
         Random rand = new Random();
         PlayerPlaysFirst = (rand.nextInt(2) == 0);
@@ -145,12 +145,37 @@ public class Gameplay extends ReadFromFile {
          *********/
         
         try{
-            read(Player, PlayerGrid, EnemyPlayer, EnemyGrid);
+            read(Player, PlayerGrid, EnemyPlayer, EnemyGrid, SCENARIO_ID);
         }
-        catch(OversizeException oversizeException){System.out.println(oversizeException.getMessage()); return;}
-        catch (OverlapTilesException overlapTilesException){System.out.println(overlapTilesException.getMessage()); return;}
-        catch (AdjacentTilesException adjacentTilesException){System.out.println(adjacentTilesException.getMessage()); return;}
-        catch (InvalidCountException invalidCountException){System.out.println(invalidCountException.getMessage()); return;}
+        catch(OversizeException oversizeException){
+            a.setNoExceptions(false);
+            a.createAlert("Oversize Exception", "Please make sure that ships don't go out of the grid;s bounds."); 
+            System.out.println(oversizeException.getMessage()); 
+            return;
+        }
+        catch (OverlapTilesException overlapTilesException){
+            a.setNoExceptions(false);
+            a.createAlert("OverlapTiles Exception", "Please make sure that ships don't occupy the same space."); 
+            System.out.println(overlapTilesException.getMessage()); 
+            return;
+        }
+        catch (AdjacentTilesException adjacentTilesException){
+            a.setNoExceptions(false);
+            a.createAlert("AdjacentTiles Exception", "Ships must have at least one empty space between them."); 
+            System.out.println(adjacentTilesException.getMessage()); 
+            return;
+        }
+        catch (InvalidCountException invalidCountException){
+            a.setNoExceptions(false);
+            a.createAlert("InvalidCount Exception", "Make sure you have provided the correct number and type of ships."); 
+            System.out.println(invalidCountException.getMessage()); 
+            return;
+        }
+        if(fileNotFound){
+            a.setNoExceptions(false);
+            a.createAlert("File Not Found", "Please insert a valid SCENARIO-ID.");
+        }
+
     }
 
     
