@@ -6,6 +6,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
 import javafx.scene.layout.GridPane;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -15,6 +16,8 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import java.net.URL;
 import java.util.LinkedList;
@@ -23,11 +26,7 @@ import java.util.ResourceBundle;
 public class MainApp extends Application implements Initializable {
 
     @FXML
-    private GridPane playerGridLabels;
-    @FXML
     private GridPane playerGrid;
-    @FXML
-    private GridPane enemyGridLabels;
     @FXML
     private GridPane enemyGrid;
     @FXML
@@ -191,9 +190,9 @@ public class MainApp extends Application implements Initializable {
             updatePositions = Game.oneTurn(this, iCo, jCo);
             // update history & board
             playerShotsList.add(new IntPair(iCo+1, jCo+1));
-            enemyBoard[iCo][jCo].updatePosition(Game.getEnemyGrid().getPosition((iCo), (jCo)));
+            enemyBoard[iCo+1][jCo+1].updatePosition(Game.getEnemyGrid().getPosition((iCo), (jCo)));
             enemyShotsList.add(new IntPair(updatePositions.i_pos+1, updatePositions.j_pos+1));
-            playerBoard[updatePositions.i_pos][updatePositions.j_pos].updatePosition(Game.getPlayerGrid().getPosition(updatePositions.i_pos, updatePositions.j_pos));
+            playerBoard[updatePositions.i_pos+1][updatePositions.j_pos+1].updatePosition(Game.getPlayerGrid().getPosition(updatePositions.i_pos, updatePositions.j_pos));
         } catch(AlreadyHitException ahe){
             iTextField.setText("");
             jTextField.setText("");
@@ -394,19 +393,54 @@ public class MainApp extends Application implements Initializable {
 
 
         NumberBinding rectsAreaSize = Bindings.min(playerGrid.heightProperty(), playerGrid.widthProperty());
-        playerBoard = new Cell[10][10];
-        enemyBoard = new Cell[10][10];
+        playerBoard = new Cell[11][11];
+        enemyBoard = new Cell[11][11];
 
         /* Create all cells for both grids */
-        for(int row=0; row<10; row++){
-            for(int col=0; col<10; col++){
+        for(int row=0; row<=10; row++){      
+            for(int col=0; col<=10; col++){
 
-                // Label elabel = new Label();
-                // elabel.setText(Integer.toString(col));
-                // playerGridLabels.add(elabel, col, 0);
+                if(row==0 && col==0) continue;
+                if(row==0){
+                    /* add label to playerGrid */
+                    Label label = new Label();
+                    label.setMinHeight(30.0);
+                    label.setMinWidth(30.0);
+                    label.setAlignment(Pos.CENTER);
+                    label.setText(Integer.toString(col));
+                    label.setFont(new Font("Arial", 20));
+                    playerGrid.add(label, col, row);
+                    /* add label to enemyGrid */
+                    label = new Label();
+                    label.setMinHeight(30.0);
+                    label.setMinWidth(30.0);
+                    label.setAlignment(Pos.CENTER);
+                    label.setText(Integer.toString(col));
+                    label.setFont(new Font("Arial", 20));
+                    enemyGrid.add(label, col, row);
+                    continue;
+                }
+
+                if(col==0){
+                    /* add label to playerGrid */
+                    Label label = new Label();
+                    label.setMinWidth(30.0);
+                    label.setAlignment(Pos.CENTER);
+                    label.setText(Integer.toString(row));
+                    label.setFont(new Font("Arial", 20));
+                    playerGrid.add(label, col, row);
+                    /* add label to enemyGrid */
+                    label = new Label();
+                    label.setMinWidth(30.0);
+                    label.setAlignment(Pos.CENTER);
+                    label.setText(Integer.toString(row));
+                    label.setFont(new Font("Arial", 20));
+                    enemyGrid.add(label, col, row);
+                    continue;
+                }
 
                 playerBoard[row][col] = new Cell(row, col, true);
-                if(noExceptions && Game.getPlayerGrid().isShip(new IntPair(row, col))){
+                if(noExceptions && Game.getPlayerGrid().isShip(new IntPair(row-1, col-1))){
                     playerBoard[row][col].isShip();
                 }
                 enemyBoard[row][col] = new Cell(row, col, false);
@@ -417,14 +451,7 @@ public class MainApp extends Application implements Initializable {
                 playerBoard[row][col].yProperty().bind(rectsAreaSize.multiply(col).divide(10));
                 playerBoard[row][col].heightProperty().bind(rectsAreaSize.divide(10));
                 playerBoard[row][col].widthProperty().bind(playerBoard[row][col].heightProperty());
-                
-                Label plabel = new Label();
-                plabel.setMinHeight(30.0);
-                plabel.setText(Integer.toString(row));
-                playerGridLabels.add(plabel, 0, row);
 
-
-                
                 enemyBoard[row][col].heightProperty().bind(rectsAreaSize.divide(10));
                 enemyBoard[row][col].widthProperty().bind(enemyBoard[row][col].heightProperty());
                 enemyBoard[row][col].xProperty().bind(rectsAreaSize.multiply(row).divide(10));
