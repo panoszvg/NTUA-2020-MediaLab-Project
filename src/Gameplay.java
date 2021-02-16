@@ -2,6 +2,8 @@ import java.util.*;
 
 public class Gameplay extends ReadFromFile {
     
+    public static boolean gameIsOver;
+
     private boolean PlayerPlaysFirst;
     public boolean getPlayerPlaysFirst() {
         return PlayerPlaysFirst;
@@ -139,6 +141,7 @@ public class Gameplay extends ReadFromFile {
         Player = new Player("Player");
         EnemyPlayer = new EnemyPlayer("Enemy");
         possiblePositions = new ArrayList<IntPair>();
+        gameIsOver = false;
 
         /*********
          * Read from file
@@ -214,6 +217,7 @@ public class Gameplay extends ReadFromFile {
     // Is Game Over?
     if((Player.getMoves() == EnemyPlayer.getMoves() && EnemyPlayer.getMoves() == 0) || playersShipsAllSunk) 
     {
+        gameIsOver = true;
         a.setInputTextArea("");
         if (Player.getPoints() > EnemyPlayer.getPoints())
             a.setOutputTextArea("You won!");
@@ -307,6 +311,7 @@ public class Gameplay extends ReadFromFile {
     // Is Game Over?
     if((Player.getMoves() == EnemyPlayer.getMoves() && EnemyPlayer.getMoves() == 0) || playersShipsAllSunk) 
     {
+        gameIsOver = true;
         a.setInputTextArea("");
         if (Player.getPoints() > EnemyPlayer.getPoints())
             a.setOutputTextArea("You won!");

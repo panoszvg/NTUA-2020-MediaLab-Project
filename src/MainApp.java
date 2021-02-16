@@ -17,7 +17,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
-import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import java.net.URL;
 import java.util.LinkedList;
@@ -161,6 +160,12 @@ public class MainApp extends Application implements Initializable {
     public void hitAction(ActionEvent t){
         setOutputTextArea("");
 
+        if(Gameplay.gameIsOver) {
+            iTextField.setText("");
+            jTextField.setText("");
+            return;
+        }
+        
         if(!noExceptions){
             createAlert("Can't play this scenario", "Please provide a valid scenario to start the game.");
             iTextField.setText("");
@@ -171,12 +176,12 @@ public class MainApp extends Application implements Initializable {
         int iCo = 0;
         int jCo = 0; 
         try{
-            iCo = Integer.parseInt(iTextField.getText()); iCo--; // Immediate
-            jCo = Integer.parseInt(jTextField.getText()); jCo--; // Conversion
+            iCo = Integer.parseInt(iTextField.getText()); //iCo--; // Immediate
+            jCo = Integer.parseInt(jTextField.getText()); //jCo--; // Conversion
             iTextField.setText("");
             jTextField.setText("");
             if(iCo < 0 || iCo > 9 || jCo < 0 || jCo > 9){
-                setInputTextArea("Please insert a valid number (1 <= i,j <= 10)");
+                setInputTextArea("Please insert a valid number (0 <= i,j <= 9)");
                 return;
             }
         } catch(NumberFormatException nfe) {
@@ -189,9 +194,9 @@ public class MainApp extends Application implements Initializable {
             IntPair updatePositions = new IntPair(-1, -1);
             updatePositions = Game.oneTurn(this, iCo, jCo);
             // update history & board
-            playerShotsList.add(new IntPair(iCo+1, jCo+1));
+            playerShotsList.add(new IntPair(iCo, jCo));
             enemyBoard[iCo+1][jCo+1].updatePosition(Game.getEnemyGrid().getPosition((iCo), (jCo)));
-            enemyShotsList.add(new IntPair(updatePositions.i_pos+1, updatePositions.j_pos+1));
+            enemyShotsList.add(new IntPair(updatePositions.i_pos, updatePositions.j_pos));
             playerBoard[updatePositions.i_pos+1][updatePositions.j_pos+1].updatePosition(Game.getPlayerGrid().getPosition(updatePositions.i_pos, updatePositions.j_pos));
         } catch(AlreadyHitException ahe){
             iTextField.setText("");
@@ -407,7 +412,7 @@ public class MainApp extends Application implements Initializable {
                     label.setMinHeight(30.0);
                     label.setMinWidth(30.0);
                     label.setAlignment(Pos.CENTER);
-                    label.setText(Integer.toString(col));
+                    label.setText(Integer.toString(col-1));
                     label.setFont(new Font("Arial", 20));
                     playerGrid.add(label, col, row);
                     /* add label to enemyGrid */
@@ -415,7 +420,7 @@ public class MainApp extends Application implements Initializable {
                     label.setMinHeight(30.0);
                     label.setMinWidth(30.0);
                     label.setAlignment(Pos.CENTER);
-                    label.setText(Integer.toString(col));
+                    label.setText(Integer.toString(col-1));
                     label.setFont(new Font("Arial", 20));
                     enemyGrid.add(label, col, row);
                     continue;
@@ -426,14 +431,14 @@ public class MainApp extends Application implements Initializable {
                     Label label = new Label();
                     label.setMinWidth(30.0);
                     label.setAlignment(Pos.CENTER);
-                    label.setText(Integer.toString(row));
+                    label.setText(Integer.toString(row-1));
                     label.setFont(new Font("Arial", 20));
                     playerGrid.add(label, col, row);
                     /* add label to enemyGrid */
                     label = new Label();
                     label.setMinWidth(30.0);
                     label.setAlignment(Pos.CENTER);
-                    label.setText(Integer.toString(row));
+                    label.setText(Integer.toString(row-1));
                     label.setFont(new Font("Arial", 20));
                     enemyGrid.add(label, col, row);
                     continue;
