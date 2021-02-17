@@ -18,7 +18,7 @@ and then initializes EnemyPlayer-specific parameters
             for(int j=0; j<10; j++){
                 enemyChoices.add(new IntPair(i, j));
             }
-        System.out.println(enemyChoices.size());
+        //System.out.println(enemyChoices.size());
     }
 
     /* Is used by the enemy/computer to choose which position to hit -

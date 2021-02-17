@@ -160,12 +160,14 @@ public class MainApp extends Application implements Initializable {
     public void hitAction(ActionEvent t){
         setOutputTextArea("");
 
+        /* if game is over do nothing */
         if(Gameplay.gameIsOver) {
             iTextField.setText("");
             jTextField.setText("");
             return;
         }
         
+        /* it requires correct SCENARIO_ID to function */
         if(!noExceptions){
             createAlert("Can't play this scenario", "Please provide a valid scenario to start the game.");
             iTextField.setText("");
@@ -176,8 +178,8 @@ public class MainApp extends Application implements Initializable {
         int iCo = 0;
         int jCo = 0; 
         try{
-            iCo = Integer.parseInt(iTextField.getText()); //iCo--; // Immediate
-            jCo = Integer.parseInt(jTextField.getText()); //jCo--; // Conversion
+            iCo = Integer.parseInt(iTextField.getText());
+            jCo = Integer.parseInt(jTextField.getText());
             iTextField.setText("");
             jTextField.setText("");
             if(iCo < 0 || iCo > 9 || jCo < 0 || jCo > 9){
@@ -223,13 +225,6 @@ public class MainApp extends Application implements Initializable {
 
     public void startAction(ActionEvent t){
         initialize();
-        if(!Game.getPlayerPlaysFirst()){
-            try{
-            IntPair temp = Game.oneTurn(this, 0, 0);
-            enemyShotsList.add(new IntPair(temp.i_pos+1, temp.j_pos+1));
-            playerBoard[temp.i_pos][temp.j_pos].updatePosition(Game.getPlayerGrid().getPosition(temp.i_pos, temp.j_pos));
-            } catch(AlreadyHitException e) {}
-        }
     }
 
     public void loadAction(ActionEvent t){
@@ -266,13 +261,13 @@ public class MainApp extends Application implements Initializable {
         for(int i=playerShotsList.size()-1; i>=((playerShotsList.size() < 5) ? 0 : playerShotsList.size()-5); i--){
             int iList = playerShotsList.get(i).i_pos;
             int jList = playerShotsList.get(i).j_pos;
-            int shotResult = Game.getEnemyGrid().getPosition(iList-1, jList-1);
+            int shotResult = Game.getEnemyGrid().getPosition(iList, jList);
             String shipType = "";
-            if(Game.getEnemyGrid().wasHit(new IntPair(iList-1, jList-1)))
-                shipType = Game.getEnemyPlayer().shipArray[Game.getEnemyPlayer().findShip(new IntPair(iList-1, jList-1))].getType();
+            if(Game.getEnemyGrid().wasHit(new IntPair(iList, jList)))
+                shipType = Game.getEnemyPlayer().shipArray[Game.getEnemyPlayer().findShip(new IntPair(iList, jList))].getType();
             
-                str += "Position:{" + String.valueOf(iList) + "," + ((iList == 10 || jList == 10) ? "" : " ") + String.valueOf(jList) + "}    "
-                 + ((iList == 10 && jList == 10) ? "" : "  ") + ((iList != 10 && jList != 10) ? " " : "") + ((shotResult==2) ? "Hit -> " + shipType : "Missed") + '\n';
+                str += "Position:{" + String.valueOf(iList) + "," + String.valueOf(jList) + "}    "
+                 + ((shotResult==2) ? "Hit -> " + shipType : "Missed") + '\n';
         }
         Alert alert = new Alert(AlertType.INFORMATION);
         alert.setTitle("Player Shots Information");
@@ -287,13 +282,13 @@ public class MainApp extends Application implements Initializable {
         for(int i=enemyShotsList.size()-1; i>=((enemyShotsList.size() < 5) ? 0 : enemyShotsList.size()-5); i--){
             int iList = enemyShotsList.get(i).i_pos;
             int jList = enemyShotsList.get(i).j_pos;
-            int shotResult = Game.getPlayerGrid().getPosition(iList-1, jList-1);
+            int shotResult = Game.getPlayerGrid().getPosition(iList, jList);
             String shipType = "";
-            if(Game.getPlayerGrid().wasHit(new IntPair(iList-1, jList-1)))
-                shipType = Game.getPlayer().shipArray[Game.getPlayer().findShip(new IntPair(iList-1, jList-1))].getType();
+            if(Game.getPlayerGrid().wasHit(new IntPair(iList, jList)))
+                shipType = Game.getPlayer().shipArray[Game.getPlayer().findShip(new IntPair(iList, jList))].getType();
             
-                str += "Position:{" + String.valueOf(iList) + "," + ((iList == 10 || jList == 10) ? "" : " ") + String.valueOf(jList) + "}    "
-                 + ((iList == 10 && jList == 10) ? "" : "  ") + ((iList != 10 && jList != 10) ? " " : "") + ((shotResult==2) ? "Hit -> " + shipType : "Missed") + '\n';
+                str += "Position:{" + String.valueOf(iList) + "," + String.valueOf(jList) + "}    "
+                 + ((shotResult==2) ? "Hit -> " + shipType : "Missed") + '\n';
         }
         Alert alert = new Alert(AlertType.INFORMATION);
         alert.setTitle("Enemy Shots Information");
@@ -308,13 +303,13 @@ public class MainApp extends Application implements Initializable {
         for(int i=playerShotsList.size()-1; i>=0; i--){
             int iList = playerShotsList.get(i).i_pos;
             int jList = playerShotsList.get(i).j_pos;
-            int shotResult = Game.getEnemyGrid().getPosition(iList-1, jList-1);
+            int shotResult = Game.getEnemyGrid().getPosition(iList, jList);
             String shipType = "";
-            if(Game.getEnemyGrid().wasHit(new IntPair(iList-1, jList-1)))
-                shipType = Game.getEnemyPlayer().shipArray[Game.getEnemyPlayer().findShip(new IntPair(iList-1, jList-1))].getType();
+            if(Game.getEnemyGrid().wasHit(new IntPair(iList, jList)))
+                shipType = Game.getEnemyPlayer().shipArray[Game.getEnemyPlayer().findShip(new IntPair(iList, jList))].getType();
             
-                str += "Position:{" + String.valueOf(iList) + "," + ((iList == 10 || jList == 10) ? "" : " ") + String.valueOf(jList) + "}    "
-                 + ((iList == 10 && jList == 10) ? "" : "  ") + ((iList != 10 && jList != 10) ? " " : "") + ((shotResult==2) ? "Hit -> " + shipType : "Missed") + '\n';
+                str += "Position:{" + String.valueOf(iList) + "," + String.valueOf(jList) + "}    "
+                 + ((shotResult==2) ? "Hit -> " + shipType : "Missed") + '\n';
         }
         Alert alert = new Alert(AlertType.INFORMATION);
         alert.setTitle("Player Shots History");
@@ -329,13 +324,13 @@ public class MainApp extends Application implements Initializable {
         for(int i=enemyShotsList.size()-1; i>=0; i--){
             int iList = enemyShotsList.get(i).i_pos;
             int jList = enemyShotsList.get(i).j_pos;
-            int shotResult = Game.getPlayerGrid().getPosition(iList-1, jList-1);
+            int shotResult = Game.getPlayerGrid().getPosition(iList, jList);
             String shipType = "";
-            if(Game.getPlayerGrid().wasHit(new IntPair(iList-1, jList-1)))
-                shipType = Game.getPlayer().shipArray[Game.getPlayer().findShip(new IntPair(iList-1, jList-1))].getType();
+            if(Game.getPlayerGrid().wasHit(new IntPair(iList, jList)))
+                shipType = Game.getPlayer().shipArray[Game.getPlayer().findShip(new IntPair(iList, jList))].getType();
             
-                str += "Position:{" + String.valueOf(iList) + "," + ((iList == 10 || jList == 10) ? "" : " ") + String.valueOf(jList) + "}    "
-                 + ((iList == 10 && jList == 10) ? "" : "  ") + ((iList != 10 && jList != 10) ? " " : "") + ((shotResult==2) ? "Hit -> " + shipType : "Missed") + '\n';
+                str += "Position:{" + String.valueOf(iList) + "," + String.valueOf(jList) + "}    "
+                 + ((shotResult==2) ? "Hit -> " + shipType : "Missed") + '\n';
         }
         Alert alert = new Alert(AlertType.INFORMATION);
         alert.setTitle("Enemy Shots History");
@@ -465,6 +460,14 @@ public class MainApp extends Application implements Initializable {
             }
         }
 
+        /* if enemy plays first, play enemy's turn */
+        if(!Game.getPlayerPlaysFirst()){
+            try{
+            IntPair temp = Game.oneTurn(this, 0, 0);
+            enemyShotsList.add(new IntPair(temp.i_pos, temp.j_pos));
+            playerBoard[temp.i_pos+1][temp.j_pos+1].updatePosition(Game.getPlayerGrid().getPosition(temp.i_pos, temp.j_pos));
+            } catch(AlreadyHitException e) {}
+        }
     }
 
     @Override
