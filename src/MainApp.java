@@ -3,6 +3,7 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.NumberBinding;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -15,6 +16,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
@@ -90,14 +92,30 @@ public class MainApp extends Application implements Initializable {
         this.noExceptions = noExceptions;
     }
     private static String SCENARIO_ID;
+    private boolean wasClicked = false;
+    private IntPair clickedCoordinates;
 
     public class Cell extends Rectangle {
-        
+        private int x_c, y_c;
+
         public Cell(int x, int y, boolean playerBoard){
             super();
-            //super(40, 40);
+            x_c = x;
+            y_c = y;
             setFill(Color.LIGHTGREY);
             setStroke(Color.BLACK);
+
+            /* if it's the enemy's board, make it clickable */
+            if(!playerBoard)
+                this.setOnMouseClicked(new EventHandler<MouseEvent>()
+                {
+                    @Override
+                    public void handle(MouseEvent t) {
+                        wasClicked = true;
+                        clickedCoordinates = new IntPair(x_c-1, y_c-1);
+                        hitAction(new ActionEvent());
+                    }
+                });
         }
 
         public void updatePosition(int action){
@@ -130,10 +148,7 @@ public class MainApp extends Application implements Initializable {
         public void isLabel(){
             setFill(Color.WHITE);
         }
-
     }
-
-    
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -169,7 +184,7 @@ public class MainApp extends Application implements Initializable {
         
         /* it requires correct SCENARIO_ID to function */
         if(!noExceptions){
-            createAlert("Can't play this scenario", "Please provide a valid scenario to start the game.");
+            createAlert(null, "Can't play this scenario", "Please provide a valid scenario to start the game.");
             iTextField.setText("");
             jTextField.setText("");
             return;
@@ -177,21 +192,31 @@ public class MainApp extends Application implements Initializable {
 
         int iCo = 0;
         int jCo = 0; 
-        try{
-            iCo = Integer.parseInt(iTextField.getText());
-            jCo = Integer.parseInt(jTextField.getText());
-            iTextField.setText("");
-            jTextField.setText("");
-            if(iCo < 0 || iCo > 9 || jCo < 0 || jCo > 9){
-                setInputTextArea("Please insert a valid number (0 <= i,j <= 9)");
+        /* if it wasn't clicked take it from the textfields */
+        if (!wasClicked)
+            try{
+                iCo = Integer.parseInt(iTextField.getText());
+                jCo = Integer.parseInt(jTextField.getText());
+                iTextField.setText("");
+                jTextField.setText("");
+                if(iCo < 0 || iCo > 9 || jCo < 0 || jCo > 9){
+                    setInputTextArea("Please insert a valid number (0 <= i,j <= 9)");
+                    return;
+                }
+            } catch(NumberFormatException nfe) {
+                iTextField.setText("");
+                jTextField.setText("");
+                setInputTextArea("Please insert valid input (numbers)");
                 return;
             }
-        } catch(NumberFormatException nfe) {
-            iTextField.setText("");
-            jTextField.setText("");
-            setInputTextArea("Please insert valid input (numbers)");
-            return;
-        }
+        /* if it was clicked take it from the clickedCoordinates variable */
+        else {iCo = clickedCoordinates.i_pos;
+              jCo = clickedCoordinates.j_pos;
+              clickedCoordinates = null;
+              wasClicked = false;
+              iTextField.setText("");
+              jTextField.setText("");
+            }
         try{ 
             IntPair updatePositions = new IntPair(-1, -1);
             updatePositions = Game.oneTurn(this, iCo, jCo);
@@ -228,13 +253,13 @@ public class MainApp extends Application implements Initializable {
     }
 
     public void loadAction(ActionEvent t){
-
-            TextInputDialog lDialog = new TextInputDialog("SCENARIO-ID");
-            lDialog.setHeaderText("Select Game Scenario-ID:");
-            lDialog.showAndWait();
-            SCENARIO_ID = lDialog.getEditor().getText();
-            Game = new Gameplay();
-            Game.gameplay(this, SCENARIO_ID);
+        /* create dialog to insert SCENARIO_ID value */
+        TextInputDialog lDialog = new TextInputDialog("SCENARIO-ID");
+        lDialog.setHeaderText("Select Game Scenario-ID:");
+        lDialog.showAndWait();
+        SCENARIO_ID = lDialog.getEditor().getText();
+        Game = new Gameplay();
+        Game.gameplay(this, SCENARIO_ID);
             
     }
 
@@ -242,20 +267,17 @@ public class MainApp extends Application implements Initializable {
         Platform.exit();
     }
 
+    /* gets enemy ships condition */
     public void enemyShipsAction(ActionEvent t){
         String str = "";
         for(int i=0; i<5; i++){
             str += (Game.getEnemyPlayer().shipArray[i].getType() + ": " + Game.getEnemyPlayer().shipArray[i].Condition() + '\n');
         }
-        // enemyShipsPopup.show();
-        Alert alert = new Alert(AlertType.INFORMATION);
-        alert.setTitle("Enemy Ships Condition");
-        alert.setHeaderText(null);
-        alert.setGraphic(null);
-        alert.setContentText(str);
-        alert.showAndWait();
+        /* create alert to display information */
+        createAlert("Enemy Ships Condition", null, str);
     }
 
+    /* gets 5 last player shots information */
     public void playerShotsAction(ActionEvent t){
         String str = "";
         for(int i=playerShotsList.size()-1; i>=((playerShotsList.size() < 5) ? 0 : playerShotsList.size()-5); i--){
@@ -269,14 +291,11 @@ public class MainApp extends Application implements Initializable {
                 str += "Position:{" + String.valueOf(iList) + "," + String.valueOf(jList) + "}    "
                  + ((shotResult==2) ? "Hit -> " + shipType : "Missed") + '\n';
         }
-        Alert alert = new Alert(AlertType.INFORMATION);
-        alert.setTitle("Player Shots Information");
-        alert.setHeaderText(null);
-        alert.setGraphic(null);
-        alert.setContentText(str);
-        alert.showAndWait();
+        /* create alert to display information */
+        createAlert("Player Shots Information", null, str);
     }
 
+    /* gets 5 last enemy shots information */
     public void enemyShotsAction(ActionEvent t){
         String str = "";
         for(int i=enemyShotsList.size()-1; i>=((enemyShotsList.size() < 5) ? 0 : enemyShotsList.size()-5); i--){
@@ -290,14 +309,11 @@ public class MainApp extends Application implements Initializable {
                 str += "Position:{" + String.valueOf(iList) + "," + String.valueOf(jList) + "}    "
                  + ((shotResult==2) ? "Hit -> " + shipType : "Missed") + '\n';
         }
-        Alert alert = new Alert(AlertType.INFORMATION);
-        alert.setTitle("Enemy Shots Information");
-        alert.setHeaderText(null);
-        alert.setGraphic(null);
-        alert.setContentText(str);
-        alert.showAndWait();
+        /* create alert to display information */
+        createAlert("Enemy Shots Information", null, str);
     }
 
+    /* gets history/information of all player shots */
     public void playerHistoryAction(ActionEvent t){
         String str = "";
         for(int i=playerShotsList.size()-1; i>=0; i--){
@@ -311,14 +327,11 @@ public class MainApp extends Application implements Initializable {
                 str += "Position:{" + String.valueOf(iList) + "," + String.valueOf(jList) + "}    "
                  + ((shotResult==2) ? "Hit -> " + shipType : "Missed") + '\n';
         }
-        Alert alert = new Alert(AlertType.INFORMATION);
-        alert.setTitle("Player Shots History");
-        alert.setHeaderText(null);
-        alert.setGraphic(null);
-        alert.setContentText(str);
-        alert.showAndWait();
+        /* create alert to display information */
+        createAlert("Player Shots History", null, str);
     }
 
+    /* gets history/information of all enemy shots */
     public void enemyHistoryAction(ActionEvent t){
         String str = "";
         for(int i=enemyShotsList.size()-1; i>=0; i--){
@@ -332,14 +345,11 @@ public class MainApp extends Application implements Initializable {
                 str += "Position:{" + String.valueOf(iList) + "," + String.valueOf(jList) + "}    "
                  + ((shotResult==2) ? "Hit -> " + shipType : "Missed") + '\n';
         }
-        Alert alert = new Alert(AlertType.INFORMATION);
-        alert.setTitle("Enemy Shots History");
-        alert.setHeaderText(null);
-        alert.setGraphic(null);
-        alert.setContentText(str);
-        alert.showAndWait();
+        /* create alert to display information */
+        createAlert("Enemy Shots History", null, str);
     }
 
+    /* jTextField action function */
     public void handleEnterPressed(KeyEvent event){
         /* move left */
         if (event.getCode() == KeyCode.LEFT) {
@@ -358,6 +368,7 @@ public class MainApp extends Application implements Initializable {
 
     }
 
+    /* iTextField action function */
     public void moveToNextTextField(KeyEvent event){
         /* move right */
         if (event.getCode() == KeyCode.RIGHT) {
@@ -371,9 +382,10 @@ public class MainApp extends Application implements Initializable {
             else hitAction(new ActionEvent());
     }
 
-    public void createAlert(String Title, String s){
+    public void createAlert(String WindowTitle, String Title, String s){
         Alert alert = new Alert(AlertType.INFORMATION);
-        alert.setTitle("ALERT!");
+        if(WindowTitle == null) alert.setTitle("ALERT!");
+        else alert.setTitle(WindowTitle);
         alert.setHeaderText(Title);
         alert.setGraphic(null);
         alert.setContentText(s);
@@ -439,19 +451,22 @@ public class MainApp extends Application implements Initializable {
                     continue;
                 }
 
+                /* create Cells in Cell[][] arrays */
                 playerBoard[row][col] = new Cell(row, col, true);
                 if(noExceptions && Game.getPlayerGrid().isShip(new IntPair(row-1, col-1))){
+                    /* if it's a ship change its color */
                     playerBoard[row][col].isShip();
                 }
                 enemyBoard[row][col] = new Cell(row, col, false);
+                /* add Cells to their respective Gridpanes */
                 playerGrid.add(playerBoard[row][col], col, row);
                 enemyGrid.add(enemyBoard[row][col], col, row);
                 
+                /* configure size */
                 playerBoard[row][col].xProperty().bind(rectsAreaSize.multiply(row).divide(10));
                 playerBoard[row][col].yProperty().bind(rectsAreaSize.multiply(col).divide(10));
                 playerBoard[row][col].heightProperty().bind(rectsAreaSize.divide(10));
                 playerBoard[row][col].widthProperty().bind(playerBoard[row][col].heightProperty());
-
                 enemyBoard[row][col].heightProperty().bind(rectsAreaSize.divide(10));
                 enemyBoard[row][col].widthProperty().bind(enemyBoard[row][col].heightProperty());
                 enemyBoard[row][col].xProperty().bind(rectsAreaSize.multiply(row).divide(10));

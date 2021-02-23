@@ -152,31 +152,31 @@ public class Gameplay extends ReadFromFile {
         }
         catch(OversizeException oversizeException){
             a.setNoExceptions(false);
-            a.createAlert("Oversize Exception", "Please make sure that ships don't go out of the grid;s bounds."); 
+            a.createAlert(null, "Oversize Exception", "Please make sure that ships don't go out of the grid;s bounds."); 
             System.out.println(oversizeException.getMessage()); 
             return;
         }
         catch (OverlapTilesException overlapTilesException){
             a.setNoExceptions(false);
-            a.createAlert("OverlapTiles Exception", "Please make sure that ships don't occupy the same space."); 
+            a.createAlert(null, "OverlapTiles Exception", "Please make sure that ships don't occupy the same space."); 
             System.out.println(overlapTilesException.getMessage()); 
             return;
         }
         catch (AdjacentTilesException adjacentTilesException){
             a.setNoExceptions(false);
-            a.createAlert("AdjacentTiles Exception", "Ships must have at least one empty space between them."); 
+            a.createAlert(null, "AdjacentTiles Exception", "Ships must have at least one empty space between them."); 
             System.out.println(adjacentTilesException.getMessage()); 
             return;
         }
         catch (InvalidCountException invalidCountException){
             a.setNoExceptions(false);
-            a.createAlert("InvalidCount Exception", "Make sure you have provided the correct number and type of ships."); 
+            a.createAlert(null, "InvalidCount Exception", "Make sure you have provided the correct number and type of ships."); 
             System.out.println(invalidCountException.getMessage()); 
             return;
         }
         if(fileNotFound){
             a.setNoExceptions(false);
-            a.createAlert("File Not Found", "Please insert a valid SCENARIO-ID.");
+            a.createAlert(null, "File Not Found", "Please insert a valid SCENARIO-ID.");
         }
 
     }
