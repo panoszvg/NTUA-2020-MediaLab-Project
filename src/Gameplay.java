@@ -67,19 +67,19 @@ public class Gameplay {
     public static void createShip(Player player){
         switch(typeOfShip){
             case 1:
-                player.shipArray[0] = new Ship("Carrier");
+                player.shipArray[0] = new Carrier();
                 break;
             case 2:
-                player.shipArray[1] = new Ship("Battleship");
+                player.shipArray[1] = new Battleship();
                 break;
             case 3:
-                player.shipArray[2] = new Ship("Cruiser");
+                player.shipArray[2] = new Cruiser();
                 break;
             case 4:
-                player.shipArray[3] = new Ship("Submarine");
+                player.shipArray[3] = new Submarine();
                 break;
             case 5:
-                player.shipArray[4] = new Ship("Destroyer");
+                player.shipArray[4] = new Destroyer();
                 break;
         }
     }
