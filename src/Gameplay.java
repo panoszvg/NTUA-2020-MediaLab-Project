@@ -1,6 +1,7 @@
 import java.util.*;
+import java.io.*;
 
-public class Gameplay extends ReadFromFile {
+public class Gameplay {
     
     public static boolean gameIsOver;
 
@@ -28,9 +29,6 @@ public class Gameplay extends ReadFromFile {
         return EnemyPlayer;
     }
 
-    private ArrayList<IntPair> possiblePositions;
-
-
     // private static void printTables(Player Player, EnemyPlayer EnemyPlayer ,Grid PlayerGrid, Grid EnemyGrid){
     //     System.out.print("Player's Points: " + String.format("%-" + 6 + "s", Player.getPoints()) + "|");
     //     System.out.println("   Enemy's Points: " + EnemyPlayer.getPoints());
@@ -42,93 +40,187 @@ public class Gameplay extends ReadFromFile {
     //     System.out.println();
     // }
 
+  
+    public static Integer typeOfShip, i_position, j_position, orientation;
+    public static int inputCounter = 0;
+    public static boolean fileNotFound = false; // some reason can't create Exception
 
-    private static void cross(Grid PlayerGrid, IntPair positionToHit, ArrayList<IntPair> possiblePositions){
-        /*  
-        We need to check these positions :
-             []
-          [] X []
-            []
-        of the previous Hit move (cause we assume it succeeded).
-        We add new possible positions in the possiblePositions ArrayList
-        *
-        *
-        *
-        Note: above is true for the first time a ship is hit; if it's not,
-        then the next attack should have one orientation (vertical or horizontal),
-        hence the firstTimeHit condition
-        */
-
-        /* 1st position -> (i-1, j) */
-        if(PlayerGrid.isUnknown(positionToHit.i_pos-1, positionToHit.j_pos))
-            possiblePositions.add(new IntPair(positionToHit.i_pos-1, positionToHit.j_pos));
-        
-        /* 2nd position -> (i+1, j) */        
-        if(PlayerGrid.isUnknown(positionToHit.i_pos+1, positionToHit.j_pos))
-            possiblePositions.add(new IntPair(positionToHit.i_pos+1, positionToHit.j_pos));
-
-        /* 3rd position -> (i, j-1) */    
-        if(PlayerGrid.isUnknown(positionToHit.i_pos, positionToHit.j_pos-1))
-            possiblePositions.add(new IntPair(positionToHit.i_pos, positionToHit.j_pos-1));
-    
-        /* 4th position -> (i, j+1) */    
-        if(PlayerGrid.isUnknown(positionToHit.i_pos, positionToHit.j_pos+1))
-            possiblePositions.add(new IntPair(positionToHit.i_pos, positionToHit.j_pos+1));
-        
-        /* Note: the validity of the positions (e.g. if i<0)
-        is checked in the isUnknown function */
+        /* Function to assist file input
+    Source: https://knpcode.com/java-programs/how-to-read-delimited-file-in-java/ 
+    */
+    public static void parseData(String str) {
+        Scanner lineScanner = new Scanner(str);
+        lineScanner.useDelimiter(",");
+        while (lineScanner.hasNext()) {
+            typeOfShip = Integer.parseInt(lineScanner.next());
+            i_position = Integer.parseInt(lineScanner.next());
+            j_position = Integer.parseInt(lineScanner.next());
+            orientation = Integer.parseInt(lineScanner.next());
+        }
+        lineScanner.close();
     }
 
-    private static void setAIOrientation(Grid PlayerGrid, ArrayList<IntPair> possiblePositions){
-        if(positionInQuestion == null) return;
-
-        boolean vertical;
-        if((!PlayerGrid.isUnknown(positionInQuestion.i_pos-1, positionInQuestion.j_pos)
-        && !PlayerGrid.isUnknown(positionInQuestion.i_pos+1, positionInQuestion.j_pos))
-        ||
-        (!PlayerGrid.isUnknown(positionInQuestion.i_pos, positionInQuestion.j_pos-1)
-        && !PlayerGrid.isUnknown(positionInQuestion.i_pos, positionInQuestion.j_pos+1))
-        ||
-        (PlayerGrid.wasHit(new IntPair(positionInQuestion.i_pos, positionInQuestion.j_pos-1))) 
-        ||
-        (PlayerGrid.wasHit(new IntPair(positionInQuestion.i_pos, positionInQuestion.j_pos+1)))
-        ||
-        (PlayerGrid.wasHit(new IntPair(positionInQuestion.i_pos-1, positionInQuestion.j_pos))) 
-        ||
-        (PlayerGrid.wasHit(new IntPair(positionInQuestion.i_pos+1, positionInQuestion.j_pos))) 
-        ){
-            if(PlayerGrid.wasHit(new IntPair(positionInQuestion.i_pos-1, positionInQuestion.j_pos)))
-                vertical = true;
-            else vertical = false;
-        
-            if(PlayerGrid.wasHit(new IntPair(positionInQuestion.i_pos+1, positionInQuestion.j_pos)))
-                vertical = true;
-
-        /* If orientation is vertical, remove all horizontal possiblePositions (2 columns) 
-        and vice versa. This works since we are examining one ship at a time */
-        if(vertical){
-            for(int i=0; i<10; i++){
-                try{
-                    possiblePositions.remove(new IntPair(i, positionInQuestion.j_pos-1));
-                } catch(Exception arrayIndexOutOfBoundsException){System.out.println("For some reason exception for i=" + i);}
-                try{
-                    possiblePositions.remove(new IntPair(i, positionInQuestion.j_pos+1));
-                } catch(Exception arrayIndexOutOfBoundsException){System.out.println("For some reason exception for i=" + i);}
-            }
-        }
-        else{
-            for(int i=0; i<10; i++){
-                try{
-                    possiblePositions.remove(new IntPair((positionInQuestion.i_pos-1), i));
-                } catch(Exception arrayIndexOutOfBoundsException){System.out.println("For some reason exception for i=" + i);}
-                try{
-                    possiblePositions.remove(new IntPair((positionInQuestion.i_pos+1), i));
-                } catch(Exception arrayIndexOutOfBoundsException){System.out.println("For some reason exception for i=" + i);}
-            }    
+    /* It creates a Ship in shipArray of player variable - position 
+    of shipArray is based on the typeOfShip, therefore if a player
+    doesn't place a type of ship, that position remains null -> used 
+    for InvalidCountException at the end of read() */
+    public static void createShip(Player player){
+        switch(typeOfShip){
+            case 1:
+                player.shipArray[0] = new Ship("Carrier");
+                break;
+            case 2:
+                player.shipArray[1] = new Ship("Battleship");
+                break;
+            case 3:
+                player.shipArray[2] = new Ship("Cruiser");
+                break;
+            case 4:
+                player.shipArray[3] = new Ship("Submarine");
+                break;
+            case 5:
+                player.shipArray[4] = new Ship("Destroyer");
+                break;
         }
     }
-    //else System.out.println("---->Didn't do anything in setAIOrientation");
+
+    public static void read(Player Player, Grid PlayerGrid, EnemyPlayer EnemyPlayer, Grid EnemyGrid, String SCENARIO_ID) 
+    throws OversizeException, OverlapTilesException, AdjacentTilesException, InvalidCountException {
+        Scanner sc = null;
+        for(int i=0; i<2; i++)
+        try {
+            if(i==0)
+                {
+                    File file = new File("./player_" + SCENARIO_ID + ".txt");
+                    if (file.exists()) sc = new Scanner(file);
+                    else {
+                        fileNotFound = true;
+                        return;
+                    }
+                }
+            else 
+                {
+                    File file = new File("./enemy_" + SCENARIO_ID + ".txt");
+                    if (file.exists()) sc = new Scanner(file);
+                    else {
+                        fileNotFound = true;
+                        return;
+                    }
+                }
+            
+            inputCounter = 0;
+            while (sc.hasNextLine()) {
+                String str = sc.nextLine();
+                inputCounter++;
+                if(inputCounter > 5) throw new InvalidCountException("InvalidCountException");
+                parseData(str);
+                IntPair temp = new IntPair(i_position, j_position); /* is local to while, no need to free memory */
+                if(i==0){
+                  /* For Player */
+                    createShip(Player);
+                    /* Set ship position (it will be set regardless of whether it is correct -
+                    if it throws OversizeException, it will be thrown on Set function) */
+                    Player.shipArray[typeOfShip-1].setShipPosition(typeOfShip, temp, orientation);
+                    /* Update board in corresponding Grid */
+                    for(int j=0; j<Player.shipArray[typeOfShip-1].getOccupyingSpaces(); j++)
+                        try{
+                            PlayerGrid.Set(Player.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos, 
+                            Player.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos, 1);
+                        }
+                        catch (OversizeException oversizeException){throw oversizeException;}
+                        catch (OverlapTilesException overlapTilesException){throw overlapTilesException;}
+                    
+                        for(int j=0; j<Player.shipArray[typeOfShip-1].getOccupyingSpaces(); j++) {
+                        
+                            /* if there is a ship adjacent throw Exception. We check:
+                                [X][1][1][1][X] 
+                            (and vertically using orientation variable) on the first if and:   
+                                [X][X][X]
+                                [1][1][1]
+                                [X][X][X]
+                            (and vertically using orientation variable) on the second if         
+                            */                 
+                            if(((j == 0) /* before first block */
+                                && ((orientation == 1) 
+                                    ? PlayerGrid.isShip(new IntPair(Player.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos,
+                                    Player.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos-1)) 
+                                    : PlayerGrid.isShip(new IntPair(Player.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos-1,
+                                    Player.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos)))) 
+                            || ((j == Player.shipArray[typeOfShip-1].getOccupyingSpaces()-1) /* after last block */
+                                && ((orientation == 1) 
+                                    ? PlayerGrid.isShip(new IntPair(Player.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos,
+                                    Player.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos+1))
+                                    : PlayerGrid.isShip(new IntPair(Player.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos+1,
+                                    Player.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos))))) 
+                                throw new AdjacentTilesException("AdjacentTilesException");
+                            if((orientation == 1)
+                                ? (PlayerGrid.isShip(new IntPair(Player.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos+1,
+                                    Player.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos)) 
+                                || PlayerGrid.isShip(new IntPair(Player.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos-1,
+                                    Player.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos))
+                                )
+                                : (PlayerGrid.isShip(new IntPair(Player.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos,
+                                    Player.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos+1)) 
+                                || PlayerGrid.isShip(new IntPair(Player.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos,
+                                    Player.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos-1))))
+                                throw new AdjacentTilesException("AdjacentTilesException");
+                    }
+                }
+                else{
+                  /* For Enemy */
+                    createShip((Player)EnemyPlayer);
+                    EnemyPlayer.shipArray[typeOfShip-1].setShipPosition(typeOfShip, temp, orientation);
+                    for(int j=0; j<EnemyPlayer.shipArray[typeOfShip-1].getOccupyingSpaces(); j++)
+                        try{
+                            EnemyGrid.Set(EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos, 
+                            EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos, 1);
+                        }
+                        catch(OversizeException oversizeException){throw oversizeException;}
+                        catch (OverlapTilesException overlapTilesException){throw overlapTilesException;}
+                
+                        for(int j=0; j<EnemyPlayer.shipArray[typeOfShip-1].getOccupyingSpaces(); j++){
+                            if(((j == 0) /* before first block */
+                                && ((orientation == 1) 
+                                    ? EnemyGrid.isShip(new IntPair(EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos,
+                                    EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos-1)) 
+                                    : EnemyGrid.isShip(new IntPair(EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos-1,
+                                    EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos)))) 
+                            || ((j == EnemyPlayer.shipArray[typeOfShip-1].getOccupyingSpaces()-1) /* after last block */
+                                && ((orientation == 1) 
+                                    ? EnemyGrid.isShip(new IntPair(EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos,
+                                    EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos+1))
+                                    : EnemyGrid.isShip(new IntPair(EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos+1,
+                                    EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos))))) 
+                                throw new AdjacentTilesException("AdjacentTilesException");
+                            if((orientation == 1)
+                                ? (EnemyGrid.isShip(new IntPair(EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos+1,
+                                    EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos)) 
+                                || EnemyGrid.isShip(new IntPair(EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos-1,
+                                    EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos))
+                                )
+                                : (EnemyGrid.isShip(new IntPair(EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos,
+                                    EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos+1)) 
+                                || EnemyGrid.isShip(new IntPair(EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).i_pos,
+                                    EnemyPlayer.shipArray[typeOfShip-1].getShipPosition().get(j).j_pos-1))))
+                                throw new AdjacentTilesException("AdjacentTilesException");
+                        }
+
+                }
+            }        
+        } catch (IOException exp){
+            exp.printStackTrace();
+        } finally{           
+            if(sc != null)
+                sc.close();
+        }
+
+        /* if one position in shipArray is null it means that a type of ship was not used */
+        for(int k=0; k<5; k++){
+            if(Player.shipArray[k] == null) throw new InvalidCountException("Player InvalidCountException " + k);
+            if(EnemyPlayer.shipArray[k] == null) throw new InvalidCountException("Enemy InvalidCountException " + k);
+        }
     }
+
 
     public void gameplay(MainApp a, String SCENARIO_ID) {
         
@@ -140,7 +232,7 @@ public class Gameplay extends ReadFromFile {
 
         Player = new Player("Player");
         EnemyPlayer = new EnemyPlayer("Enemy");
-        possiblePositions = new ArrayList<IntPair>();
+        EnemyPlayer.initializePossiblePositions();
         gameIsOver = false;
 
         /*********
@@ -184,7 +276,6 @@ public class Gameplay extends ReadFromFile {
     
     public IntPair oneTurn(MainApp a, int i_coord, int j_coord) throws AlreadyHitException {
     
-    IntPair positionsHitThisTurn;
         
     /*Player turn*/
     if(PlayerPlaysFirst){
@@ -226,86 +317,8 @@ public class Gameplay extends ReadFromFile {
     }
     else PlayerPlaysFirst = true;
 
-
     /*Enemy Turn*/
-
-    IntPair positionToHit = new IntPair(0,0);
-    /* Hit is done after the skeleton and if it doesn't succeed
-    it returns false, thus re-entering the do-while */
-    do {
-        /* Get possible positions from AIChoose function
-        and put them in positionToHit variable (necessary for predictions afterwards) */
-        /* Note: In AIChoose, possiblePositions is only used if AIOption is enabled, 
-        therefore there is no need to examine edge cases (e.g. the first round where it's NULL) */
-        try{
-            positionToHit = EnemyPlayer.AIChoose(possiblePositions.get(0));
-        }
-        catch (Exception indexOutOfBoundsException){
-            possiblePositionsErrorIntPair = new IntPair(-1, -1);
-            positionToHit = EnemyPlayer.AIChoose(possiblePositionsErrorIntPair);
-        }
-        finally{
-            if(!possiblePositions.isEmpty()){
-                /* if there are possible positions, remove one after using it -
-                (it is used when it is chosen from AIChoose) */
-                possiblePositions.remove(0);
-            }
-            else{
-                /* if there aren't any possible positions, disable AI Option */
-                EnemyPlayer.disableAIOption();
-            }
-        }
-    }
-    while (!PlayerGrid.Hit(positionToHit.i_pos, positionToHit.j_pos));
-
-    positionsHitThisTurn = new IntPair(positionToHit.i_pos, positionToHit.j_pos);
-
-    setAIOrientation(PlayerGrid, possiblePositions);
-
-    if(PlayerGrid.wasHit(positionToHit)){
-        EnemyPlayer.madeASuccessfulShot();
-        /* If the positionToHit (that was hit) was where 
-        a ship was in the Grid, also update "Hit" status to Ship 
-        and add points for hitting it to EnemyPlayer */
-        Player.shipArray[Player.findShip(positionToHit)].isHit();
-        EnemyPlayer.IncreasePoints(Player.shipArray[Player.findShip(positionToHit)].getShotPoints());
-
-        /* If it was the first time this ship was hit update positionInQuestion */
-        if(Player.shipArray[Player.findShip(positionToHit)].Condition() == "Hit" && 
-        Player.shipArray[Player.findShip(positionToHit)].firstTimeHit()){
-            positionInQuestion = new IntPair(positionToHit.i_pos, positionToHit.j_pos);
-        }
-        else{
-            if(Player.shipArray[Player.findShip(positionToHit)].Condition() == "Sunk"){
-                EnemyPlayer.IncreasePoints(Player.shipArray[Player.findShip(positionToHit)].getSinkBonus());
-                possiblePositions.clear();
-                positionInQuestion = null;
-            }
-        }
-    }
-
-    setAIOrientation(PlayerGrid, possiblePositions);
-
-    /* If a ship is hit enable AI Option */
-    for(int i=0; i<5; i++){
-        if(Player.shipArray[i].Condition() == "Hit") {
-            EnemyPlayer.enableAIOption();
-            break;
-        }
-        EnemyPlayer.disableAIOption(); 
-    }
-
-    /* If AI Option is enabled add new possible moves */    
-    if(EnemyPlayer.getAIOption() && PlayerGrid.wasHit(positionToHit))
-        cross(PlayerGrid, positionToHit, possiblePositions);
-
-    setAIOrientation(PlayerGrid, possiblePositions);
-    playersShipsAllSunk = true;
-    for(int i=0; i<5; i++){
-        if(EnemyPlayer.shipArray[i].Condition() != "Sunk") 
-            playersShipsAllSunk = false;
-    }
-    EnemyPlayer.MadeAMove();
+    IntPair ReturnPair = EnemyPlayer.enemyTurn(Player, PlayerGrid, EnemyPlayer, playersShipsAllSunk);
     
     //printTables(Player, EnemyPlayer, PlayerGrid, EnemyGrid);
     // Is Game Over?
@@ -318,7 +331,7 @@ public class Gameplay extends ReadFromFile {
         else a.setOutputTextArea("You lost.");
     }
 
-    return positionsHitThisTurn;
+    return ReturnPair;
 
     }
 }
