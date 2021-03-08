@@ -1,7 +1,5 @@
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
-import javafx.beans.binding.NumberBinding;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -24,6 +22,11 @@ import java.net.URL;
 import java.util.LinkedList;
 import java.util.ResourceBundle;
  
+/**
+ * MainApp is the class that contains main() and creates
+ * a JavaFX application and connects it to front-end, which
+ * exists in .fxml file
+ */
 public class MainApp extends Application implements Initializable {
 
     @FXML
@@ -32,43 +35,77 @@ public class MainApp extends Application implements Initializable {
     private GridPane enemyGrid;
     @FXML
     private Label playerShipsAlive;
+    /**
+     * Update front-end: show how many of player's ships are still alive
+     * @param a integer that shows player's ships still alive
+     */
     public void setPlayerShipsAlive(int a) {
         this.playerShipsAlive.setText("Ships Alive: " + a);
     }
     @FXML
     private Label playerSuccessfulShots;
+    /**
+     * Update front-end: show percentage of player's successful shots
+     * @param s string that contains float (percentage) of player's successful shots
+     */
     public void setPlayerSuccessfulShots(String s) {
         this.playerSuccessfulShots.setText("Successful Shots Average: " + s + "%");
     }
     @FXML
     private Label playerPoints;
+    /**
+     * Update front-end: show player's points
+     * @param a integer containing player's points
+     */
     public void setPlayerPoints(int a) {
         this.playerPoints.setText("Player Points: " + a);;
     }
     @FXML
     private Label enemyShipsAlive;
+    /**
+     * Update front-end: show how many of enemy's ships are still alive
+     * @param a integer that shows enemy's ships still alive
+     */
     public void setEnemyShipsAlive(int a) {
         this.enemyShipsAlive.setText("Ships Alive: " + a);
     }
     @FXML
     private Label enemySuccessfulShots;
+    /**
+     * Update front-end: show percentage of enemy's successful shots
+     * @param s string that contains float (percentage) of enemy's successful shots
+     */
     public void setEnemySuccessfulShots(String s) {
         this.enemySuccessfulShots.setText("Successful Shots Average: " + s + "%");
     }
     @FXML
     private Label enemyPoints;
+    /**
+     * Update front-end: show enemy's points
+     * @param a integer containing enemy's points
+     */
     public void setEnemyPoints(int a) {
         this.enemyPoints.setText("Enemy Points: " + a);;
     }
     @FXML
     private Label outputTextArea;
+    /**
+     * Update front-end: show message in given, used for messages
+     * concerning game progress, eg. ship sunk, game over status
+     * @param s String given to be displayed
+     */
     public void setOutputTextArea(String s) {
-        this.outputTextArea.setText(s);
+        outputTextArea.setText(s);
     }
     @FXML
     private Label inputTextArea;
+    /**
+     * Update front-end: show message in given, used for messages
+     * concerning instructions to user, eg. enter coordinates
+     * @param s String given to be displayed
+     */
     public void setInputTextArea(String s) {
-        this.inputTextArea.setText(s);
+        inputTextArea.setText(s);
     }
     @FXML
     private TextField iTextField;
@@ -84,22 +121,41 @@ public class MainApp extends Application implements Initializable {
     LinkedList<IntPair> playerShotsList;
     LinkedList<IntPair> enemyShotsList;
 
-    private boolean noExceptions;
-    public boolean getNoExceptions(){
+    private static boolean noExceptions;
+    /**
+     * Getter method to know whether there have been any
+     * exceptions in read from file
+     * @return "noExceptions" variable
+     */
+    public static boolean getNoExceptions(){
         return noExceptions;
     }
-    public void setNoExceptions(boolean noExceptions) {
-        this.noExceptions = noExceptions;
+    /**
+     * Setter method to mark whether there have been any
+     * exceptions in read from file
+     */
+    public static void setNoExceptions(boolean noExceptions) {
+        MainApp.noExceptions = noExceptions;
     }
     private static String SCENARIO_ID;
     private boolean wasClicked = false;
     private IntPair clickedCoordinates;
 
+    /**
+     * Cells that make up the boards of the app
+     */
     public class Cell extends Rectangle {
         private int x_c, y_c;
 
+        /**
+         * Creates Cell by creating a 30x30 rectangle
+         * @param x x-coordinate of cell (is +1 of back-end coordinates)
+         * @param y y-coordinate of cell (is +1 of back-end coordinates)
+         * @param playerBoard true if board is player's, false if it
+         * is enemy's - needed to make clickable
+         */
         public Cell(int x, int y, boolean playerBoard){
-            super();
+            super(30,30);
             x_c = x;
             y_c = y;
             setFill(Color.LIGHTGREY);
@@ -118,6 +174,11 @@ public class MainApp extends Application implements Initializable {
                 });
         }
 
+        /**
+         * Given a number, update front-end: make it a different color.
+         * Specifically, if sea or ship was hit, show it
+         * @param action integer in board[][] in Grid class
+         */
         public void updatePosition(int action){
             switch(action){
                 case 0:
@@ -133,28 +194,51 @@ public class MainApp extends Application implements Initializable {
             }
         }
 
+        /**
+         * Update front-end: make cell lightyellow 
+         * since it's a ship (for player)
+         */
         public void isShip() {
             setFill(Color.LIGHTYELLOW);
         }
 
+        /**
+         * Update front-end: make cell gray
+         * since it was a ship (for enemy post-game)
+         */
+        public void wasShip(){
+            setFill(Color.GRAY);
+        }
+
+        /**
+         * Update front-end: make cell red
+         * since it's a ship that was shot
+         */
         public void makeShotShip() {
             setFill(Color.RED);
         }
 
+        /**
+         * Update front-end: make cell black
+         * since it's sea that was shot
+         */
         public void makeShotSea() {
             setFill(Color.BLACK);
-        }
-
-        public void isLabel(){
-            setFill(Color.WHITE);
         }
     }
 
     @Override
+    /** 
+     * Needed to load game from .fxml
+     */
     public void initialize(URL location, ResourceBundle resources) {
         initialize();
     }
 
+    /**
+     * Opted to create new function, in order to be able to call it 
+     * if game is restarted and everything needs to be reinitialised
+     */
     public void initialize() {
     
         setInputTextArea("Enter the coordinates (i, j) for your move: ");
@@ -172,6 +256,11 @@ public class MainApp extends Application implements Initializable {
 
     }
 
+    /**
+     * What happens when a player hits a position in grid - game commences:
+     * a turn is played and front-end is updated accordingly
+     * @param t ActionEvent that led to this function being called
+     */
     public void hitAction(ActionEvent t){
         setOutputTextArea("");
 
@@ -179,6 +268,11 @@ public class MainApp extends Application implements Initializable {
         if(Gameplay.gameIsOver) {
             iTextField.setText("");
             jTextField.setText("");
+            if(Game.getPlayer().getPoints() > Game.getEnemyPlayer().getPoints())
+                setOutputTextArea("You won!");
+            else if(Game.getPlayer().getPoints() < Game.getEnemyPlayer().getPoints())
+                setOutputTextArea("You lost.");
+            else setOutputTextArea("It's a tie.");
             return;
         }
         
@@ -246,12 +340,29 @@ public class MainApp extends Application implements Initializable {
         /* Update Points */
         setPlayerPoints(Game.getPlayer().getPoints());
         setEnemyPoints(Game.getEnemyPlayer().getPoints());
+
+        /* After game is over reveal enemy ships player didn't sink */
+        if(Gameplay.gameIsOver)
+            for(int i=0; i<10; i++)
+                for(int j=0; j<10; j++)
+                    if(Game.getEnemyGrid().getPosition(i, j) == 1) 
+                        enemyBoard[i][j].wasShip();
+                
     }
 
+    /**
+     * Start Game loaded (clean slate)
+     * @param t ActionEvent that led to this function being called
+     */
     public void startAction(ActionEvent t){
         initialize();
     }
 
+    /**
+     * Opens to dialog so that user gives input (which
+     * file to read from)
+     * @param t ActionEvent that led to this function being called
+     */
     public void loadAction(ActionEvent t){
         /* create dialog to insert SCENARIO_ID value */
         TextInputDialog lDialog = new TextInputDialog("SCENARIO-ID");
@@ -259,15 +370,22 @@ public class MainApp extends Application implements Initializable {
         lDialog.showAndWait();
         SCENARIO_ID = lDialog.getEditor().getText();
         Game = new Gameplay();
-        Game.gameplay(this, SCENARIO_ID);
+        Game.gameplay(SCENARIO_ID);
             
     }
 
+    /**
+     * Function that exits this application
+     * @param t
+     */
     public void exitAction(ActionEvent t){
         Platform.exit();
     }
 
-    /* gets enemy ships condition */
+    /**
+     * Gets enemy ships condition and displays it
+     * @param t ActionEvent that led to this function being called
+     */
     public void enemyShipsAction(ActionEvent t){
         String str = "";
         for(int i=0; i<5; i++){
@@ -277,7 +395,11 @@ public class MainApp extends Application implements Initializable {
         createAlert("Enemy Ships Condition", null, str);
     }
 
-    /* gets 5 last player shots information */
+
+    /**
+     * Gets 5 last player shots information and displays it
+     * @param t ActionEvent that led to this function being called
+     */
     public void playerShotsAction(ActionEvent t){
         String str = "";
         for(int i=playerShotsList.size()-1; i>=((playerShotsList.size() < 5) ? 0 : playerShotsList.size()-5); i--){
@@ -295,7 +417,10 @@ public class MainApp extends Application implements Initializable {
         createAlert("Player Shots Information", null, str);
     }
 
-    /* gets 5 last enemy shots information */
+    /**
+     * Gets 5 last enemy shots information and displays it
+     * @param t ActionEvent that led to this function being called
+     */
     public void enemyShotsAction(ActionEvent t){
         String str = "";
         for(int i=enemyShotsList.size()-1; i>=((enemyShotsList.size() < 5) ? 0 : enemyShotsList.size()-5); i--){
@@ -313,7 +438,10 @@ public class MainApp extends Application implements Initializable {
         createAlert("Enemy Shots Information", null, str);
     }
 
-    /* gets history/information of all player shots */
+    /**
+     * Gets history/information of all player shots and displays it
+     * @param t ActionEvent that led to this function being called
+     */
     public void playerHistoryAction(ActionEvent t){
         String str = "";
         for(int i=playerShotsList.size()-1; i>=0; i--){
@@ -331,7 +459,10 @@ public class MainApp extends Application implements Initializable {
         createAlert("Player Shots History", null, str);
     }
 
-    /* gets history/information of all enemy shots */
+    /**
+     * Gets history/information of all enemy shots and displays it
+     * @param t ActionEvent that led to this function being called
+     */
     public void enemyHistoryAction(ActionEvent t){
         String str = "";
         for(int i=enemyShotsList.size()-1; i>=0; i--){
@@ -349,7 +480,11 @@ public class MainApp extends Application implements Initializable {
         createAlert("Enemy Shots History", null, str);
     }
 
-    /* jTextField action function */
+    /**
+     * When user presses Left Arrow Key or "Enter" (and there is no
+     * input in previous TextField) moves to it (jTextField -> iTextField)
+     * @param event ActionEvent that led to this function being called
+     */
     public void handleEnterPressed(KeyEvent event){
         /* move left */
         if (event.getCode() == KeyCode.LEFT) {
@@ -368,7 +503,11 @@ public class MainApp extends Application implements Initializable {
 
     }
 
-    /* iTextField action function */
+    /**
+     * When user presses Right Arrow Key or "Enter" (and there is no
+     * input in next TextField) moves to it (iTextField -> jTextField)
+     * @param event ActionEvent that led to this function being called
+     */
     public void moveToNextTextField(KeyEvent event){
         /* move right */
         if (event.getCode() == KeyCode.RIGHT) {
@@ -382,7 +521,13 @@ public class MainApp extends Application implements Initializable {
             else hitAction(new ActionEvent());
     }
 
-    public void createAlert(String WindowTitle, String Title, String s){
+    /**
+     * Creates and displays alert with given information
+     * @param WindowTitle String that is displayed as window title
+     * @param Title String that is the title inside the window
+     * @param s String to be written as a more detailed explaination
+     */
+    public static void createAlert(String WindowTitle, String Title, String s){
         Alert alert = new Alert(AlertType.INFORMATION);
         if(WindowTitle == null) alert.setTitle("ALERT!");
         else alert.setTitle(WindowTitle);
@@ -396,15 +541,19 @@ public class MainApp extends Application implements Initializable {
         launch(args);
     }
 
+    /**
+     * Creates game, also initialising front-end grids and plays a turn
+     * if enemy is supposed to play first in this game
+     */
     public void createGame(){
         Game = new Gameplay();
+        setOutputTextArea("");
 
         if(SCENARIO_ID == null) 
-            Game.gameplay(this, "default");
-        else Game.gameplay(this, SCENARIO_ID);
+            Game.gameplay("default");
+        else Game.gameplay(SCENARIO_ID);
 
 
-        NumberBinding rectsAreaSize = Bindings.min(playerGrid.heightProperty(), playerGrid.widthProperty());
         playerBoard = new Cell[11][11];
         enemyBoard = new Cell[11][11];
 
@@ -461,23 +610,13 @@ public class MainApp extends Application implements Initializable {
                 /* add Cells to their respective Gridpanes */
                 playerGrid.add(playerBoard[row][col], col, row);
                 enemyGrid.add(enemyBoard[row][col], col, row);
-                
-                /* configure size */
-                playerBoard[row][col].xProperty().bind(rectsAreaSize.multiply(row).divide(10));
-                playerBoard[row][col].yProperty().bind(rectsAreaSize.multiply(col).divide(10));
-                playerBoard[row][col].heightProperty().bind(rectsAreaSize.divide(10));
-                playerBoard[row][col].widthProperty().bind(playerBoard[row][col].heightProperty());
-                enemyBoard[row][col].heightProperty().bind(rectsAreaSize.divide(10));
-                enemyBoard[row][col].widthProperty().bind(enemyBoard[row][col].heightProperty());
-                enemyBoard[row][col].xProperty().bind(rectsAreaSize.multiply(row).divide(10));
-                enemyBoard[row][col].yProperty().bind(rectsAreaSize.multiply(col).divide(10));
-
             }
         }
 
         /* if enemy plays first, play enemy's turn */
         if(!Game.getPlayerPlaysFirst()){
             try{
+            setOutputTextArea("Enemy plays first.");
             IntPair temp = Game.oneTurn(this, 0, 0);
             enemyShotsList.add(new IntPair(temp.i_pos, temp.j_pos));
             playerBoard[temp.i_pos+1][temp.j_pos+1].updatePosition(Game.getPlayerGrid().getPosition(temp.i_pos, temp.j_pos));
@@ -486,6 +625,9 @@ public class MainApp extends Application implements Initializable {
     }
 
     @Override
+    /**
+     * start function needed to initialise stage/window to play in
+     */
     public void start(Stage primaryStage) {
         
         Parent root = null;

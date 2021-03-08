@@ -2,17 +2,25 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.Vector;
 
+/**
+ * EnemyPlayer class represents both the computer enemy
+ * and provides information relevant to the enemy player and methods
+ * to access that information that are needed for the game.
+ */
 public class EnemyPlayer extends Player {
     
-    private boolean AIOption;
-    private Vector<IntPair> enemyChoices;
-    private ArrayList<IntPair> possiblePositions;
-    private IntPair possiblePositionsErrorIntPair;
-    private static IntPair positionInQuestion;
+    private boolean AIOption; /* whether to choose random or smart */
+    private Vector<IntPair> enemyChoices; /* positions enemy hasn't already hit */
+    private static ArrayList<IntPair> possiblePositions; /* is used if it hits Player's ship */
+    private IntPair possiblePositionsErrorIntPair; /* assisting variable */
+    private static IntPair positionInQuestion; /* assisting variable */
 
-/* Initalizes EnemyPlayer class, first as a Player class
-and then initializes EnemyPlayer-specific parameters 
-(Option for AI, aka "smart targeting" and positions not already hit)*/
+    /**
+     * Initalizes EnemyPlayer class, first as a Player class
+     * and then initializes EnemyPlayer-specific parameters 
+     * (Option for AI, aka "smart targeting" and positions not already hit)
+     * @param name same with Player class
+     */
     EnemyPlayer(String name){
         super(name);
 
@@ -25,8 +33,14 @@ and then initializes EnemyPlayer-specific parameters
         //System.out.println(enemyChoices.size());
     }
 
-    /* Is used by the enemy/computer to choose which position to hit -
-    possiblePositions is given by main and is updated when this function resolves */
+    /**
+     * Is used by the enemy/computer to choose which position to hit:
+     * If AIOption is disabled it chooses random, otherwise it uses given variable
+     * @param possiblePositions is given by enemyTurn(...) and is updated when this function resolves:
+     * if it contains the position (-1, -1) or the "AIOption" variable is false
+     * a random position to hit is returned, otherwise it is returned as it is
+     * @return positions that are going to be hit
+     */
     public IntPair AIChoose(IntPair possiblePositions){
         
         Random rand = new Random();
@@ -51,8 +65,13 @@ and then initializes EnemyPlayer-specific parameters
         return ans;
     }
 
-    
-    private static void cross(Grid PlayerGrid, IntPair positionToHit, ArrayList<IntPair> possiblePositions){
+    /**
+     * If Player's ship is hit, adds positions (i,j) that surround the hit position
+     * in the "possiblePositions" variable 
+     * @param PlayerGrid needed in order to check surrounding positions
+     * @param positionToHit position that was hit and will check surrounding positions
+     */
+    private static void cross(Grid PlayerGrid, IntPair positionToHit){
         /*  
         We need to check these positions :
              []
@@ -88,8 +107,16 @@ and then initializes EnemyPlayer-specific parameters
         is checked in the isUnknown function */
     }
 
-    
-    private static void setAIOrientation(Grid PlayerGrid, ArrayList<IntPair> possiblePositions){
+    /**
+     * After Player's ship is hit, decides whether it's placed horizontally
+     * or vertically: it checks surrounding positions to see if any one of them
+     * is hit. If none other is hit, it means no inference about the Player's ship's 
+     * orientation can be made. If there is, decide its orientation and sweep; that
+     * is, delete all possible positions that don't agree with the orientation by
+     * removing them from the "possiblePositions" variable
+     * @param PlayerGrid needed in order to check surrounding positions
+     */
+    private static void setAIOrientationAndSweep(Grid PlayerGrid){
         if(positionInQuestion == null) return;
 
         boolean vertical;
@@ -137,9 +164,24 @@ and then initializes EnemyPlayer-specific parameters
             }    
         }
     }
-    //else System.out.println("---->Didn't do anything in setAIOrientation");
+    //else System.out.println("---->Didn't do anything in setAIOrientationAndSweep");
     }
 
+    /**
+     * Plays enemy's turn:
+     * - Hit position in Player's grid
+     * - If shot was successful update Player's ships and Enemy's variables:
+     *      --> Points
+     *      --> AIOption
+     *      --> possiblePositions
+     *      --> positionsHitThisTurn
+     * - All the time sweep in order to ensure that no unnecessary possble positions remain in the list
+     * @param Player needed to get access to Player's ships
+     * @param PlayerGrid needed in order to check surrounding positions
+     * @param EnemyPlayer needed in order to change enemy's variables
+     * @param playersShipsAllSunk update it to know whether game is over
+     * @return "positionsHitThisTurn" variable to update front-end
+     */
     public IntPair enemyTurn(Player Player, Grid PlayerGrid, EnemyPlayer EnemyPlayer, boolean playersShipsAllSunk){
             
             IntPair positionsHitThisTurn;
@@ -152,11 +194,11 @@ and then initializes EnemyPlayer-specific parameters
             /* Note: In AIChoose, possiblePositions is only used if AIOption is enabled, 
             therefore there is no need to examine edge cases (e.g. the first round where it's NULL) */
             try{
-                positionToHit = EnemyPlayer.AIChoose(possiblePositions.get(0));
+                positionToHit = AIChoose(possiblePositions.get(0));
             }
             catch (Exception indexOutOfBoundsException){
                 possiblePositionsErrorIntPair = new IntPair(-1, -1);
-                positionToHit = EnemyPlayer.AIChoose(possiblePositionsErrorIntPair);
+                positionToHit = AIChoose(possiblePositionsErrorIntPair);
             }
             finally{
                 if(!possiblePositions.isEmpty()){
@@ -166,7 +208,7 @@ and then initializes EnemyPlayer-specific parameters
                 }
                 else{
                     /* if there aren't any possible positions, disable AI Option */
-                    EnemyPlayer.disableAIOption();
+                    disableAIOption();
                 }
             }
         }
@@ -174,7 +216,7 @@ and then initializes EnemyPlayer-specific parameters
 
         positionsHitThisTurn = new IntPair(positionToHit.i_pos, positionToHit.j_pos);
 
-        setAIOrientation(PlayerGrid, possiblePositions);
+        setAIOrientationAndSweep(PlayerGrid);
 
         if(PlayerGrid.wasHit(positionToHit)){
             EnemyPlayer.madeASuccessfulShot();
@@ -190,6 +232,7 @@ and then initializes EnemyPlayer-specific parameters
                 positionInQuestion = new IntPair(positionToHit.i_pos, positionToHit.j_pos);
             }
             else{
+                /* If the ship was sunk get sink bonus and remove remaining possiblePositions */
                 if(Player.shipArray[Player.findShip(positionToHit)].Condition() == "Sunk"){
                     EnemyPlayer.IncreasePoints(Player.shipArray[Player.findShip(positionToHit)].getSinkBonus());
                     possiblePositions.clear();
@@ -198,22 +241,22 @@ and then initializes EnemyPlayer-specific parameters
             }
         }
 
-        setAIOrientation(PlayerGrid, possiblePositions);
+        setAIOrientationAndSweep(PlayerGrid);
 
         /* If a ship is hit enable AI Option */
         for(int i=0; i<5; i++){
             if(Player.shipArray[i].Condition() == "Hit") {
-                EnemyPlayer.enableAIOption();
+                enableAIOption();
                 break;
             }
-            EnemyPlayer.disableAIOption(); 
+            disableAIOption(); 
         }
 
         /* If AI Option is enabled add new possible moves */    
-        if(EnemyPlayer.getAIOption() && PlayerGrid.wasHit(positionToHit))
-            cross(PlayerGrid, positionToHit, possiblePositions);
+        if(getAIOption() && PlayerGrid.wasHit(positionToHit))
+            cross(PlayerGrid, positionToHit);
 
-        setAIOrientation(PlayerGrid, possiblePositions);
+        setAIOrientationAndSweep(PlayerGrid);
         playersShipsAllSunk = true;
         for(int i=0; i<5; i++){
             if(EnemyPlayer.shipArray[i].Condition() != "Sunk") 
@@ -224,19 +267,32 @@ and then initializes EnemyPlayer-specific parameters
         return positionsHitThisTurn;
     }
 
-
+    /**
+     * Enable smart choices (from "possiblePositions" ArrayList)
+     */
     public void enableAIOption(){
         this.AIOption = true;
     }
 
+    /**
+     * Enable random hits
+     */
     public void disableAIOption(){
         this.AIOption = false;
     }
 
+    /**
+     * Check whether enemy is playing smart or random
+     * @return "AIOption" variable
+     */
     public boolean getAIOption(){
         return this.AIOption;
     }
 
+    /**
+     * Is called when a game is initialised, to also
+     * initialise the "possiblePositions" variable
+     */
     public void initializePossiblePositions(){
         possiblePositions = new ArrayList<IntPair>();
     }
