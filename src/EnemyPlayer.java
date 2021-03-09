@@ -16,7 +16,7 @@ public class EnemyPlayer extends Player {
     private static IntPair positionInQuestion; /* assisting variable */
 
     /**
-     * Initalizes EnemyPlayer class, first as a Player class
+     * Initalises EnemyPlayer class, first as a Player class
      * and then initializes EnemyPlayer-specific parameters 
      * (Option for AI, aka "smart targeting" and positions not already hit)
      * @param name same with Player class
@@ -25,7 +25,7 @@ public class EnemyPlayer extends Player {
         super(name);
 
         AIOption = false;
-        this.enemyChoices = new Vector<IntPair>();
+        this.enemyChoices = new Vector<>();
         for(int i=0; i<10; i++)
             for(int j=0; j<10; j++){
                 enemyChoices.add(new IntPair(i, j));
@@ -175,7 +175,7 @@ public class EnemyPlayer extends Player {
      *      --> AIOption
      *      --> possiblePositions
      *      --> positionsHitThisTurn
-     * - All the time sweep in order to ensure that no unnecessary possble positions remain in the list
+     * - All the time sweep in order to ensure that no unnecessary possible positions remain in the list
      * @param Player needed to get access to Player's ships
      * @param PlayerGrid needed in order to check surrounding positions
      * @param EnemyPlayer needed in order to change enemy's variables
@@ -227,13 +227,13 @@ public class EnemyPlayer extends Player {
             EnemyPlayer.IncreasePoints(Player.shipArray[Player.findShip(positionToHit)].getShotPoints());
 
             /* If it was the first time this ship was hit update positionInQuestion */
-            if(Player.shipArray[Player.findShip(positionToHit)].Condition() == "Hit" && 
+            if(Player.shipArray[Player.findShip(positionToHit)].Condition().equals("Hit") &&
             Player.shipArray[Player.findShip(positionToHit)].firstTimeHit()){
                 positionInQuestion = new IntPair(positionToHit.i_pos, positionToHit.j_pos);
             }
             else{
                 /* If the ship was sunk get sink bonus and remove remaining possiblePositions */
-                if(Player.shipArray[Player.findShip(positionToHit)].Condition() == "Sunk"){
+                if(Player.shipArray[Player.findShip(positionToHit)].Condition().equals("Sunk")){
                     EnemyPlayer.IncreasePoints(Player.shipArray[Player.findShip(positionToHit)].getSinkBonus());
                     possiblePositions.clear();
                     positionInQuestion = null;
@@ -245,7 +245,7 @@ public class EnemyPlayer extends Player {
 
         /* If a ship is hit enable AI Option */
         for(int i=0; i<5; i++){
-            if(Player.shipArray[i].Condition() == "Hit") {
+            if(Player.shipArray[i].Condition().equals("Hit")) {
                 enableAIOption();
                 break;
             }
@@ -259,7 +259,7 @@ public class EnemyPlayer extends Player {
         setAIOrientationAndSweep(PlayerGrid);
         playersShipsAllSunk = true;
         for(int i=0; i<5; i++){
-            if(EnemyPlayer.shipArray[i].Condition() != "Sunk") 
+            if(!EnemyPlayer.shipArray[i].Condition().equals("Sunk"))
                 playersShipsAllSunk = false;
         }
         EnemyPlayer.MadeAMove();
@@ -294,7 +294,7 @@ public class EnemyPlayer extends Player {
      * initialise the "possiblePositions" variable
      */
     public void initializePossiblePositions(){
-        possiblePositions = new ArrayList<IntPair>();
+        possiblePositions = new ArrayList<>();
     }
 
 }

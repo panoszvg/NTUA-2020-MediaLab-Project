@@ -147,7 +147,7 @@ public class Gameplay {
         try {
             if(i==0)
                 {
-                    File file = new File("../scenarios/player_" + SCENARIO_ID + ".txt");
+                    File file = new File("scenarios/player_" + SCENARIO_ID + ".txt");
                     if (file.exists()) {
                         fileNotFound = false;
                         sc = new Scanner(file);
@@ -159,7 +159,7 @@ public class Gameplay {
                 }
             else 
                 {
-                    File file = new File("../scenarios/enemy_" + SCENARIO_ID + ".txt");
+                    File file = new File("scenarios/enemy_" + SCENARIO_ID + ".txt");
                     if (file.exists()) {
                         fileNotFound = false;
                         sc = new Scanner(file);
@@ -300,16 +300,13 @@ public class Gameplay {
         EnemyPlayer.initializePossiblePositions();
         gameIsOver = false;
 
-        /*********
-         * Read from file
-         *********/
-        
+        /* Read from file */
         try{
             read(Player, PlayerGrid, EnemyPlayer, EnemyGrid, SCENARIO_ID);
         }
         catch(OversizeException oversizeException){
             MainApp.setNoExceptions(false);
-            MainApp.createAlert(null, "Oversize Exception", "Please make sure that ships don't go out of the grid;s bounds."); 
+            MainApp.createAlert(null, "Oversize Exception", "Please make sure that ships don't go out of the grid's bounds.");
             System.out.println(oversizeException.getMessage()); 
             return;
         }

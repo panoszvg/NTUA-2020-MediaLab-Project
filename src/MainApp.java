@@ -1,7 +1,6 @@
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -14,7 +13,6 @@ import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
@@ -58,7 +56,7 @@ public class MainApp extends Application implements Initializable {
      * @param a integer containing player's points
      */
     public void setPlayerPoints(int a) {
-        this.playerPoints.setText("Player Points: " + a);;
+        this.playerPoints.setText("Player Points: " + a);
     }
     @FXML
     private Label enemyShipsAlive;
@@ -85,7 +83,7 @@ public class MainApp extends Application implements Initializable {
      * @param a integer containing enemy's points
      */
     public void setEnemyPoints(int a) {
-        this.enemyPoints.setText("Enemy Points: " + a);;
+        this.enemyPoints.setText("Enemy Points: " + a);
     }
     @FXML
     private Label outputTextArea;
@@ -123,14 +121,6 @@ public class MainApp extends Application implements Initializable {
 
     private static boolean noExceptions;
     /**
-     * Getter method to know whether there have been any
-     * exceptions in read from file
-     * @return "noExceptions" variable
-     */
-    public static boolean getNoExceptions(){
-        return noExceptions;
-    }
-    /**
      * Setter method to mark whether there have been any
      * exceptions in read from file
      */
@@ -145,7 +135,7 @@ public class MainApp extends Application implements Initializable {
      * Cells that make up the boards of the app
      */
     public class Cell extends Rectangle {
-        private int x_c, y_c;
+        final private int x_c, y_c;
 
         /**
          * Creates Cell by creating a 30x30 rectangle
@@ -163,14 +153,10 @@ public class MainApp extends Application implements Initializable {
 
             /* if it's the enemy's board, make it clickable */
             if(!playerBoard)
-                this.setOnMouseClicked(new EventHandler<MouseEvent>()
-                {
-                    @Override
-                    public void handle(MouseEvent t) {
-                        wasClicked = true;
-                        clickedCoordinates = new IntPair(x_c-1, y_c-1);
-                        hitAction(new ActionEvent());
-                    }
+                this.setOnMouseClicked(t -> {
+                    wasClicked = true;
+                    clickedCoordinates = new IntPair(x_c-1, y_c-1);
+                    hitAction(new ActionEvent());
                 });
         }
 
@@ -209,28 +195,12 @@ public class MainApp extends Application implements Initializable {
         public void wasShip(){
             setFill(Color.GRAY);
         }
-
-        /**
-         * Update front-end: make cell red
-         * since it's a ship that was shot
-         */
-        public void makeShotShip() {
-            setFill(Color.RED);
-        }
-
-        /**
-         * Update front-end: make cell black
-         * since it's sea that was shot
-         */
-        public void makeShotSea() {
-            setFill(Color.BLACK);
-        }
     }
 
-    @Override
-    /** 
+    /**
      * Needed to load game from .fxml
      */
+    @Override
     public void initialize(URL location, ResourceBundle resources) {
         initialize();
     }
@@ -248,8 +218,8 @@ public class MainApp extends Application implements Initializable {
         setEnemySuccessfulShots("0.00");
         setPlayerPoints(0);
         setEnemyPoints(0);
-        playerShotsList = new LinkedList<IntPair>();
-        enemyShotsList = new LinkedList<IntPair>();
+        playerShotsList = new LinkedList<>();
+        enemyShotsList = new LinkedList<>();
         /* Start a game */
         noExceptions = true;
         createGame();
@@ -329,8 +299,8 @@ public class MainApp extends Application implements Initializable {
         int pShipsAlive = 5;
         int eShipsAlive = 5;
         for(int i=0; i<5; i++){
-            if(Game.getPlayer().shipArray[i].Condition() == "Sunk") pShipsAlive--;
-            if(Game.getEnemyPlayer().shipArray[i].Condition() == "Sunk") eShipsAlive--;
+            if(Game.getPlayer().shipArray[i].Condition().equals("Sunk")) pShipsAlive--;
+            if(Game.getEnemyPlayer().shipArray[i].Condition().equals("Sunk")) eShipsAlive--;
         }
         setPlayerShipsAlive(pShipsAlive);
         setEnemyShipsAlive(eShipsAlive);
@@ -346,7 +316,7 @@ public class MainApp extends Application implements Initializable {
             for(int i=0; i<10; i++)
                 for(int j=0; j<10; j++)
                     if(Game.getEnemyGrid().getPosition(i, j) == 1) 
-                        enemyBoard[i][j].wasShip();
+                        enemyBoard[i+1][j+1].wasShip();
                 
     }
 
@@ -376,7 +346,7 @@ public class MainApp extends Application implements Initializable {
 
     /**
      * Function that exits this application
-     * @param t
+     * @param t ActionEvent that led to this function being called
      */
     public void exitAction(ActionEvent t){
         Platform.exit();
@@ -525,7 +495,7 @@ public class MainApp extends Application implements Initializable {
      * Creates and displays alert with given information
      * @param WindowTitle String that is displayed as window title
      * @param Title String that is the title inside the window
-     * @param s String to be written as a more detailed explaination
+     * @param s String to be written as a more detailed explanation
      */
     public static void createAlert(String WindowTitle, String Title, String s){
         Alert alert = new Alert(AlertType.INFORMATION);
@@ -633,7 +603,7 @@ public class MainApp extends Application implements Initializable {
         Parent root = null;
         
         try{
-        root = FXMLLoader.load(getClass().getClassLoader().getResource("javafx-project.fxml"));
+        root = FXMLLoader.load(getClass().getResource("./javafx-project.fxml"));
         } catch(Exception e){e.printStackTrace();}
         primaryStage.setScene(new Scene(root,1100,700));  
         primaryStage.setTitle("MediaLab Battleship");

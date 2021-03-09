@@ -1,10 +1,10 @@
 /**
  * Implements the board on which ships are placed - both
- * Player's ships and Enemy'e ships
+ * Player's ships and Enemy's ships
  */
 class Grid{
     
-    private int board[][];
+    private int[][] board;
     /*
     
     */
@@ -175,10 +175,13 @@ class Grid{
     }
 
     /**
+     * @deprecated
      * Check whether given position (i, j) is Hit Sea
      * @param i x-coordinate
      * @param j y-coordinate
      * @return true if integer in position (i, j) is 3, otherwise false
+     * Was used during debugging, when there was
+     * no front-end and game was played in terminal
      */
     public boolean isHitSea(int i, int j){
         try{
@@ -221,9 +224,12 @@ class Grid{
     }
 
     /**
+     * @deprecated
      * Check whether given position (i, j) is sea that isn't hit
      * @param position x-y coordinates
      * @return true if integer in position (i, j) is 1, otherwise false
+     * Was used during debugging, when there was
+     * no front-end and game was played in terminal
      */
     public boolean isSea(IntPair position){
         try{

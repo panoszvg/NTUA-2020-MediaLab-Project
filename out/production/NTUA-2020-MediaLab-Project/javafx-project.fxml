@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox prefHeight="700.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="MainApp">
+  <children>
+    <MenuBar prefWidth="1100.0" VBox.vgrow="NEVER">
+      <menus>
+        <Menu mnemonicParsing="false" text="Application">
+          <items>
+            <MenuItem mnemonicParsing="false" onAction="#startAction" text="Start" />
+            <MenuItem mnemonicParsing="false" onAction="#loadAction" text="Load" />
+            <MenuItem mnemonicParsing="false" onAction="#exitAction" text="Exit" />
+          </items>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Details">
+          <items>
+            <MenuItem fx:id="enemyShips" mnemonicParsing="false" onAction="#enemyShipsAction" text="Enemy Ships" />
+            <MenuItem fx:id="playerShots" mnemonicParsing="false" onAction="#playerShotsAction" text="Player Shots" />
+            <MenuItem fx:id="enemyShots" mnemonicParsing="false" onAction="#enemyShotsAction" text="Enemy Shots" />
+          </items>
+        </Menu>
+            <Menu mnemonicParsing="false" text="History">
+               <items>
+                  <MenuItem fx:id="playerHistory" mnemonicParsing="false" onAction="#playerHistoryAction" text="Player History" />
+                  <MenuItem fx:id="enemyHistory" mnemonicParsing="false" onAction="#enemyHistoryAction" text="Enemy History" />
+               </items>
+            </Menu>
+      </menus>
+    </MenuBar>
+      <BorderPane prefHeight="689.0" prefWidth="1100.0">
+         <center>
+            <HBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" BorderPane.alignment="CENTER">
+               <children>
+                  <GridPane id="playerGrid" fx:id="playerGrid" alignment="CENTER" gridLinesVisible="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="300.0" minWidth="300.0">
+                    
+                     <HBox.margin>
+                        <Insets bottom="50.0" right="100.0" top="25.0" />
+                     </HBox.margin>
+                  </GridPane>
+                  <GridPane fx:id="enemyGrid" alignment="CENTER" gridLinesVisible="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="300.0" minWidth="300.0">
+                    
+                     <HBox.margin>
+                        <Insets bottom="50.0" left="100.0" right="50.0" top="25.0" />
+                     </HBox.margin>
+                  </GridPane>
+               </children>
+            </HBox>
+         </center>
+         <bottom>
+            <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
+               <children>
+                  <Label fx:id="outputTextArea" alignment="CENTER" prefWidth="300.0">
+                     <font>
+                        <Font size="18.0" />
+                     </font></Label>
+                  <Label fx:id="inputTextArea" alignment="CENTER" contentDisplay="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+                  <HBox alignment="CENTER" prefHeight="100.0" prefWidth="550.0" spacing="30.0">
+                     <children>
+                        <TextField fx:id="iTextField" onKeyPressed="#moveToNextTextField" />
+                        <TextField fx:id="jTextField" onKeyPressed="#handleEnterPressed" />
+                        <Button fx:id="hitButton" mnemonicParsing="false" onAction="#hitAction" prefWidth="50.0" text="Hit" />
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+         </bottom>
+         <top>
+            <GridPane alignment="CENTER" BorderPane.alignment="CENTER">
+              <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+              </columnConstraints>
+              <rowConstraints>
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+              </rowConstraints>
+               <children>
+                  <Label alignment="CENTER" contentDisplay="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Player" textAlignment="CENTER">
+                     <font>
+                        <Font name="System Bold" size="24.0" />
+                     </font>
+                  </Label>
+                  <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.rowIndex="1">
+                     <children>
+                        <Label fx:id="playerShipsAlive" maxHeight="1.7976931348623157E308" text="Ships Alive: " />
+                        <Label fx:id="playerSuccessfulShots" maxHeight="1.7976931348623157E308" text="Successful Shots Average:">
+                           <padding>
+                              <Insets left="50.0" />
+                           </padding>
+                           <HBox.margin>
+                              <Insets right="50.0" />
+                           </HBox.margin>
+                        </Label>
+                     </children>
+                  </HBox>
+                  <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                     <children>
+                        <Label fx:id="enemyShipsAlive" maxHeight="1.7976931348623157E308" text="Ships Alive: " />
+                        <Label fx:id="enemySuccessfulShots" maxHeight="1.7976931348623157E308" text="Successful Shots Average:">
+                           <padding>
+                              <Insets left="50.0" />
+                           </padding>
+                           <HBox.margin>
+                              <Insets right="40.0" />
+                           </HBox.margin>
+                        </Label>
+                     </children>
+                  </HBox>
+                  <Label alignment="CENTER" contentDisplay="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Enemy" textAlignment="CENTER" GridPane.columnIndex="1">
+                     <font>
+                        <Font name="System Bold" size="24.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="playerPoints" alignment="CENTER" contentDisplay="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Player Points: " textAlignment="CENTER" GridPane.rowIndex="2">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="enemyPoints" alignment="CENTER" contentDisplay="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Enemy Points: " textAlignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Label>
+               </children>
+               <BorderPane.margin>
+                  <Insets top="50.0" />
+               </BorderPane.margin>
+            </GridPane>
+         </top>
+      </BorderPane>
+  </children>
+</VBox>

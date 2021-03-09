@@ -4,7 +4,7 @@
  * been hit - is needed to update the front end
  */
 public class AlreadyHitException extends Exception {
-   private static final long serialVersionUID = 4162002099423146487L;
+
 
     /**
      * Create custom Exception using message given by program

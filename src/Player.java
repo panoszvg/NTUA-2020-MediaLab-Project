@@ -53,7 +53,7 @@ public class Player {
      */
     public int findShip(IntPair position){
         for(int i=0; i<5; i++){
-            ArrayList<IntPair> temp = new ArrayList<IntPair>();
+            ArrayList<IntPair> temp = new ArrayList<>();
             temp = this.shipArray[i].getShipPosition();
             for(int j=0; j<this.shipArray[i].getOccupyingSpaces(); j++){
                 //System.out.println(temp.get(j).i_pos + "," + temp.get(j).j_pos);
